@@ -121,6 +121,61 @@ class CrewScreen extends StatelessWidget {
           );
         },
       ),
+      bottomNavigationBar: Container(
+  padding: EdgeInsets.all(16),
+  child: ElevatedButton(
+    child: Text(
+      '협업 시작',
+      style: TextStyle(fontSize: 18),
+    ),
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.blue,
+      foregroundColor: Colors.white,
+      padding: EdgeInsets.symmetric(vertical: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
+    onPressed: () {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.8,
+              height: MediaQuery.of(context).size.height * 0.6,
+              padding: EdgeInsets.all(20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '협업이 시작되었습니다!',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    '에이전트들이 작업을 수행하고 있습니다...',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  SizedBox(height: 40),
+                  ElevatedButton(
+                    child: Text('결과물 확인'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  ),
+),
     );
   }
 }
