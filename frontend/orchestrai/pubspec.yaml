@@ -2,7 +2,7 @@ name: orchestrai
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -31,7 +31,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
@@ -56,18 +55,17 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
 
   # assets:
-    # - assets/main.png
-    # - assets/chair.png
-    # - assets/head.png
-    # - assets/body.png
-    # - assets/tool.png
+  # - assets/main.png
+  # - assets/chair.png
+  # - assets/head.png
+  # - assets/body.png
+  # - assets/tool.png
   assets:
     - assets/main.png
     - assets/chair.png
@@ -82,13 +80,23 @@ flutter:
     - assets/head_1.png
     - assets/head_2.png
     - assets/head_3.png
+    - assets/head_4.png
     - assets/body_1.png
     - assets/body_2.png
     - assets/body_3.png
+    - assets/body_4.png
+    - assets/body_5.png
+    - assets/body_6.png
+    - assets/body_7.png
+    - assets/body_8.png
     - assets/tool_1.png
     - assets/tool_2.png
     - assets/tool_3.png
-
+    - assets/tool_4.png
+    - assets/tool_5.png
+    - assets/tool_6.png
+    - assets/tool_7.png
+    - assets/tool_8.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
