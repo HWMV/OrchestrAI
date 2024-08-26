@@ -121,61 +121,117 @@ class CrewScreen extends StatelessWidget {
           );
         },
       ),
-      bottomNavigationBar: Container(
-  padding: EdgeInsets.all(16),
-  child: ElevatedButton(
-    child: Text(
-      '협업 시작',
-      style: TextStyle(fontSize: 18),
-    ),
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.blue,
-      foregroundColor: Colors.white,
-      padding: EdgeInsets.symmetric(vertical: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-    ),
-    onPressed: () {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.8,
-              height: MediaQuery.of(context).size.height * 0.6,
-              padding: EdgeInsets.all(20),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '협업이 시작되었습니다!',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    '에이전트들이 작업을 수행하고 있습니다...',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                  SizedBox(height: 40),
-                  ElevatedButton(
-                    child: Text('결과물 확인'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
+      bottomNavigationBar: Consumer<CrewModel>(
+        builder: (context, crewModel, child) {
+          return Container(
+            padding: EdgeInsets.all(16),
+            child: ElevatedButton(
+              child: Text(
+                '협업 시작',
+                style: TextStyle(fontSize: 18),
               ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return CollaborationPopup(agents: crewModel.agents);
+                  },
+                );
+              },
             ),
           );
         },
-      );
-    },
-  ),
-),
+      ),
+    );
+  }
+}
+
+class CollaborationPopup extends StatefulWidget {
+  final List<AgentModel> agents;
+
+  CollaborationPopup({required this.agents});
+
+  @override
+  _CollaborationPopupState createState() => _CollaborationPopupState();
+}
+
+class _CollaborationPopupState extends State<CollaborationPopup> {
+  late List<AgentModel> _agents;
+
+  @override
+  void initState() {
+    super.initState();
+    _agents = List.from(widget.agents);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.8,
+        height: MediaQuery.of(context).size.height * 0.6,
+        padding: EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Text('실행 순서 설정', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            SizedBox(height: 20),
+            Expanded(
+              child: ReorderableListView(
+                onReorder: (oldIndex, newIndex) {
+                  setState(() {
+                    if (newIndex > oldIndex) {
+                      newIndex -= 1;
+                    }
+                    final AgentModel item = _agents.removeAt(oldIndex);
+                    _agents.insert(newIndex, item);
+                  });
+                },
+                children: _agents.map((agent) => AgentListItem(
+                  key: ValueKey(agent),
+                  agent: agent,
+                )).toList(),
+              ),
+            ),
+            Text('드래그하여 순서를 변경할 수 있습니다.', style: TextStyle(fontStyle: FontStyle.italic)),
+            SizedBox(height: 20),
+            ElevatedButton(
+              child: Text('협업 실행'),
+              onPressed: () {
+                // 여기에 협업 실행 로직 추가
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AgentListItem extends StatelessWidget {
+  final AgentModel agent;
+
+  AgentListItem({required Key key, required this.agent}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: 5),
+      child: ListTile(
+        leading: Icon(Icons.drag_handle),
+        title: Text(agent.name),
+        subtitle: Text('태스크: ${agent.task.name}'),
+        trailing: Icon(Icons.more_vert),
+      ),
     );
   }
 }
