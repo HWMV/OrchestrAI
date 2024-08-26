@@ -176,19 +176,34 @@ class CrewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateAgent(AgentModel agent) {
-    int index = agents.indexWhere((a) => a.name == agent.name);
-    if (index != -1) {
-      agents[index] = agent;
-      notifyListeners();
-    }
+  void addDefaultAgent() {
+    addAgent(AgentModel(
+      name: "New Agent ${agents.length + 1}",
+      role: "New Role",
+      goal: "New Goal",
+      backstory: "New Backstory", // backstory 추가
+      headAsset: 'default',
+      bodyAsset: 'default',
+      toolAsset: 'default',
+      task: Task(name: "New Task"),
+      tools: [],
+    ));
   }
+
+  void updateAgent(AgentModel updatedAgent) {
+  int index = agents.indexWhere((agent) => agent.name == updatedAgent.name);
+  if (index != -1) {
+    agents[index] = updatedAgent;
+    notifyListeners();
+  }
+}
 
   void addDummyData() {
     addAgent(AgentModel(
       name: "Agent 1",
       role: "Role 1",
       goal: "Goal 1",
+      backstory: "Backstory 1", // 여기에 backstory 추가
       headAsset: "1",
       bodyAsset: "1",
       toolAsset: "1",
@@ -203,6 +218,7 @@ class AgentModel {
   String name;
   String role;
   String goal;
+  String backstory;
   String headAsset;
   String bodyAsset;
   String toolAsset;
@@ -213,6 +229,7 @@ class AgentModel {
     required this.name,
     required this.role,
     required this.goal,
+    required this.backstory,
     required this.headAsset,
     required this.bodyAsset,
     required this.toolAsset,
@@ -223,10 +240,20 @@ class AgentModel {
 
 class Task {
   String name;
-  Task({required this.name});
+  String description;
+  String expectedOutput;
+  String outputFile;
+
+  Task({
+    required this.name,
+    this.description = '',
+    this.expectedOutput = '',
+    this.outputFile = '',
+  });
 }
 
 class Tool {
   String name;
+
   Tool({required this.name});
 }

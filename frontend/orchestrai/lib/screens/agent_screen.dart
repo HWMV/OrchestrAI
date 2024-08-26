@@ -36,6 +36,7 @@ Widget build(BuildContext context) {
           title: Text('AI에이전트를 만들어보세요'),
         ),
         body: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 왼쪽 사이드바: 조립된 에이전트 표시
             Expanded(
@@ -183,37 +184,6 @@ class CategorySelectionView extends StatelessWidget {
     );
   }
 }
-
-// class AssembledAgentView extends StatelessWidget {
-//   final AgentModel agent;
-
-//   AssembledAgentView({required this.agent});
-
-//   String _getAssetPrefix(String part) {
-//     switch (part) {
-//       case '머리':
-//         return 'head';
-//       case '태스크':
-//         return 'body';
-//       case '도구':
-//         return 'tool';
-//       default:
-//         return part.toLowerCase();
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       mainAxisAlignment: MainAxisAlignment.center,
-//       children: [
-//         Image.asset('assets/${_getAssetPrefix("머리")}_${agent.headAsset}.png', height: 200),
-//         Image.asset('assets/${_getAssetPrefix("태스크")}_${agent.bodyAsset}.png', height: 200),
-//         Image.asset('assets/${_getAssetPrefix("도구")}_${agent.toolAsset}.png', height: 200),
-//       ],
-//     );
-//   }
-// }
 
 
 class AssembledAgentView extends StatelessWidget {
@@ -372,38 +342,131 @@ class ComponentSelectionView extends StatelessWidget {
   }
 }
 
-class ParameterSettingsView extends StatelessWidget {
+class ParameterSettingsView extends StatefulWidget {
   final AgentModel agent;
   final String selectedPart;
 
   ParameterSettingsView({required this.agent, required this.selectedPart});
 
   @override
+  _ParameterSettingsViewState createState() => _ParameterSettingsViewState();
+}
+
+class _ParameterSettingsViewState extends State<ParameterSettingsView> {
+  late TextEditingController _nameController;
+  late TextEditingController _roleController;
+  late TextEditingController _goalController;
+  late TextEditingController _backstoryController;
+  late TextEditingController _taskDescriptionController;
+  late TextEditingController _taskExpectedOutputController;
+  late TextEditingController _taskOutputFileController;
+  late TextEditingController _toolNameController;
+  late TextEditingController _toolDescriptionController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.agent.name);
+    _roleController = TextEditingController(text: widget.agent.role);
+    _goalController = TextEditingController(text: widget.agent.goal);
+    _backstoryController = TextEditingController(text: widget.agent.backstory);
+    _taskDescriptionController = TextEditingController(text: widget.agent.task.description);
+    _taskExpectedOutputController = TextEditingController(text: widget.agent.task.expectedOutput);
+    _taskOutputFileController = TextEditingController(text: widget.agent.task.outputFile);
+    _toolNameController = TextEditingController();
+    _toolDescriptionController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _roleController.dispose();
+    _goalController.dispose();
+    _backstoryController.dispose();
+    _taskDescriptionController.dispose();
+    _taskExpectedOutputController.dispose();
+    _taskOutputFileController.dispose();
+    _toolNameController.dispose();
+    _toolDescriptionController.dispose();
+    super.dispose();
+  }
+
+  void _updateAgent() {
+    setState(() {
+      widget.agent.name = _nameController.text;
+      widget.agent.role = _roleController.text;
+      widget.agent.goal = _goalController.text;
+      widget.agent.backstory = _backstoryController.text;
+      widget.agent.task.description = _taskDescriptionController.text;
+      widget.agent.task.expectedOutput = _taskExpectedOutputController.text;
+      widget.agent.task.outputFile = _taskOutputFileController.text;
+    });
+    Provider.of<CrewModel>(context, listen: false).updateAgent(widget.agent);
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, {int maxLines = 1}) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(labelText: label),
+      maxLines: maxLines,
+      onChanged: (_) => _updateAgent(),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    String title = '${selectedPart.isNotEmpty ? selectedPart : "컴포넌트"} 세부사항 설정';
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: Theme.of(context).textTheme.titleLarge),
-        TextField(
-          decoration: InputDecoration(labelText: '${selectedPart.isNotEmpty ? selectedPart : "컴포넌트"} 설명'),
-          onChanged: (value) {
-            // 여기에 선택된 부분에 대한 설명 업데이트 로직 추가
-          },
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text('${widget.selectedPart} 설정', style: Theme.of(context).textTheme.titleLarge),
+            SizedBox(height: 20),
+            if (widget.selectedPart == '머리') ...[
+              _buildTextField(_nameController, '에이전트 이름'),
+              _buildTextField(_roleController, '역할'),
+              _buildTextField(_goalController, '목표'),
+              _buildTextField(_backstoryController, '배경 이야기', maxLines: 3),
+            ] else if (widget.selectedPart == '태스크') ...[
+              _buildTextField(_taskDescriptionController, '태스크 설명', maxLines: 3),
+              _buildTextField(_taskExpectedOutputController, '예상 결과물', maxLines: 3),
+              _buildTextField(_taskOutputFileController, '결과물 파일명'),
+            ] else if (widget.selectedPart == '도구') ...[
+              _buildTextField(_toolNameController, '도구 이름'),
+              _buildTextField(_toolDescriptionController, '도구 설명', maxLines: 2),
+              ElevatedButton(
+                child: Text('도구 추가'),
+                onPressed: () {
+                  if (_toolNameController.text.isNotEmpty) {
+                    setState(() {
+                      widget.agent.tools.add(Tool(name: _toolNameController.text));
+                      _toolNameController.clear();
+                      _toolDescriptionController.clear();
+                    });
+                    _updateAgent();
+                  }
+                },
+              ),
+              SizedBox(height: 10),
+              Text('현재 도구 목록:', style: Theme.of(context).textTheme.titleMedium),
+              ...widget.agent.tools.map((tool) => ListTile(
+                title: Text(tool.name),
+                trailing: IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () {
+                    setState(() {
+                      widget.agent.tools.remove(tool);
+                    });
+                    _updateAgent();
+                  },
+                ),
+              )).toList(),
+            ],
+          ],
         ),
-        TextField(
-          decoration: InputDecoration(labelText: '예상결과'),
-          onChanged: (value) {
-            // 여기에 예상 결과 업데이트 로직 추가
-          },
-        ),
-        TextField(
-          decoration: InputDecoration(labelText: '아웃풋파일'),
-          onChanged: (value) {
-            // 여기에 이후풋파일 업데이트 로직 추가
-          },
-        ),
-      ],
+      ),
     );
   }
 }

@@ -41,16 +41,7 @@ class CrewScreen extends StatelessWidget {
                           ),
                         );
                       } else if (crewModel.agents.length < 4) {
-                        crewModel.addAgent(AgentModel(
-                          name: "New Agent ${crewModel.agents.length + 1}",
-                          role: "New Role",
-                          goal: "New Goal",
-                          headAsset: 'default',
-                          bodyAsset: 'default',
-                          toolAsset: 'default',
-                          task: Task(name: "New Task"),
-                          tools: [],
-                        ));
+                        crewModel.addDefaultAgent(); 
                         await Navigator.push(
                           context,
                           MaterialPageRoute(
