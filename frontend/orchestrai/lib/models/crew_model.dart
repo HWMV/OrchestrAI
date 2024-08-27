@@ -1,199 +1,59 @@
-// import 'package:flutter/foundation.dart';
-
-// class CrewModel extends ChangeNotifier {
-//   String crewName = '';
-//   List<AgentModel> agents = [];
-
-//   void setCrewName(String name) {
-//     crewName = name;
-//     notifyListeners();
-//   }
-
-//   void addAgent(AgentModel agent) {
-//     if (agents.length < 4) {
-//       agents.add(agent);
-//       notifyListeners();
-//     }
-//   }
-
-//   void updateAgent(AgentModel agent) {
-//     final index = agents.indexWhere((a) => a.name == agent.name);
-//     if (index != -1) {
-//       agents[index] = agent;
-//       notifyListeners();
-//     }
-//   }
-
-//   void addToolToAgent(AgentModel agent, ToolModel tool) {
-//     if (agent.tools.length < 4) {
-//       agent.tools.add(tool);
-//       updateAgent(agent);
-//     }
-//   }
-
-//   void removeToolFromAgent(AgentModel agent, ToolModel tool) {
-//     agent.tools.remove(tool);
-//     updateAgent(agent);
-//   }
-
-//   Map<String, dynamic> toJson() {
-//     return {
-//       'crewName': crewName,
-//       'agents': agents.map((agent) => agent.toJson()).toList(),
-//     };
-//   }
-
-//   void addDummyData() {
-//     crewName = "Test Crew";
-//     agents = [
-//       AgentModel(
-//         name: "Researcher",
-//         role: "Information Gatherer",
-//         goal: "Collect and organize data",
-//         backstory: "Experienced in data analysis and research methodologies",
-//         headAsset: 'default',
-//         bodyAsset: 'default',
-//         toolAsset: 'default',
-//         task: TaskModel(
-//           name: "Web Research",
-//           description: "Gather information from reliable web sources",
-//           expectedOutput: "Comprehensive report on findings",
-//         ),
-//         tools: [
-//           ToolModel(
-//             name: "Web Scraper",
-//             description: "Tool for extracting data from websites",
-//           ),
-//         ],
-//       ),
-//       AgentModel(
-//         name: "Analyst",
-//         role: "Data Interpreter",
-//         goal: "Analyze and interpret collected data",
-//         backstory: "Expert in statistical analysis and data visualization",
-//         headAsset: 'default',
-//         bodyAsset: 'default',
-//         toolAsset: 'default',
-//         task: TaskModel(
-//           name: "Data Analysis",
-//           description: "Perform statistical analysis on gathered data",
-//           expectedOutput: "Analytical report with insights and visualizations",
-//         ),
-//         tools: [
-//           ToolModel(
-//             name: "Statistical Software",
-//             description: "Advanced tool for statistical analysis",
-//           ),
-//         ],
-//       ),
-//     ];
-//     notifyListeners();
-//   }
-// }
-
-// class AgentModel {
-//   String name;
-//   String role;
-//   String goal;
-//   String backstory;
-//   String headAsset;
-//   String bodyAsset;
-//   String toolAsset;
-//   TaskModel task;
-//   List<ToolModel> tools;
-
-//   AgentModel({
-//     this.name = '',
-//     this.role = '',
-//     this.goal = '',
-//     this.backstory = '',
-//     this.headAsset = 'default',
-//     this.bodyAsset = 'default',
-//     this.toolAsset = 'default',
-//     TaskModel? task,
-//     List<ToolModel>? tools,
-//   })  : task = task ?? TaskModel(),
-//         tools = tools ?? [];
-
-//   Map<String, dynamic> toJson() {
-//     return {
-//       'name': name,
-//       'role': role,
-//       'goal': goal,
-//       'backstory': backstory,
-//       'headAsset': headAsset,
-//       'bodyAsset': bodyAsset,
-//       'toolAsset': toolAsset,
-//       'task': task.toJson(),
-//       'tools': tools.map((tool) => tool.toJson()).toList(),
-//     };
-//   }
-// }
-
-// class TaskModel {
-//   String name;
-//   String description;
-//   String expectedOutput;
-
-//   TaskModel({
-//     this.name = '',
-//     this.description = '',
-//     this.expectedOutput = '',
-//   });
-
-//   Map<String, dynamic> toJson() {
-//     return {
-//       'name': name,
-//       'description': description,
-//       'expectedOutput': expectedOutput,
-//     };
-//   }
-// }
-
-// class ToolModel {
-//   String name;
-//   String description;
-
-//   ToolModel({
-//     this.name = '',
-//     this.description = '',
-//   });
-
-//   Map<String, dynamic> toJson() {
-//     return {
-//       'name': name,
-//       'description': description,
-//     };
-//   }
-// }
 import 'package:flutter/foundation.dart';
 
 class CrewModel extends ChangeNotifier {
   List<AgentModel> agents = [];
+
+   // 사전 정의된 이름 목록 추가
+  static const List<String> predefinedAgentNames = [
+    '연구원', '데이터 분석가', '스크립트라이터', '일러스트레이터', '개발자', '작가', '금융전문가', '고객서비스', '학자', '커스텀에이전트'
+  ];
+
+  static const List<String> predefinedTaskNames = [
+    '정보수집', '데이터 분석', '콘텐츠 생성', '이미지 생성', '코드생성', '문서요약', '금융분석', '고객서비스지원', '학술연구검색', '커스텀태스크'
+  ];
+
+  static const List<String> predefinedToolNames = [
+    '디렉토리읽기도구', '코드분석도구', 'TXT검색도구', '디렉토리검색도구', '브라우저베이스로드도구', 'CSV검색도구', '파일읽기도구', 'Dall-E도구', '커스텀도구'
+  ];
 
   void addAgent(AgentModel agent) {
     agents.add(agent);
     notifyListeners();
   }
 
-  void updateAgent(AgentModel agent) {
-    int index = agents.indexWhere((a) => a.name == agent.name);
-    if (index != -1) {
-      agents[index] = agent;
-      notifyListeners();
-    }
+  void addDefaultAgent() {
+    addAgent(AgentModel(
+      name: predefinedAgentNames[agents.length % predefinedAgentNames.length],
+      role: "New Role",
+      goal: "New Goal",
+      backstory: "New Backstory",
+      headAsset: 'default',
+      bodyAsset: 'default',
+      toolAsset: 'default',
+      task: Task(name: predefinedTaskNames[0]),
+      tools: [],
+    ));
   }
+
+  void updateAgent(AgentModel updatedAgent) {
+  int index = agents.indexWhere((agent) => agent.name == updatedAgent.name);
+  if (index != -1) {
+    agents[index] = updatedAgent;
+    notifyListeners();
+  }
+}
 
   void addDummyData() {
     addAgent(AgentModel(
-      name: "Agent 1",
+      name: predefinedAgentNames[0],
       role: "Role 1",
       goal: "Goal 1",
+      backstory: "Backstory 1",
       headAsset: "1",
       bodyAsset: "1",
       toolAsset: "1",
-      task: Task(name: "Task 1"),
-      tools: [Tool(name: "Tool 1")],
+      task: Task(name: predefinedTaskNames[0]),
+      tools: [Tool(name: predefinedToolNames[0])],
     ));
     // 필요하다면 더 많은 더미 데이터를 추가할 수 있습니다.
   }
@@ -203,6 +63,7 @@ class AgentModel {
   String name;
   String role;
   String goal;
+  String backstory;
   String headAsset;
   String bodyAsset;
   String toolAsset;
@@ -213,6 +74,7 @@ class AgentModel {
     required this.name,
     required this.role,
     required this.goal,
+    required this.backstory,
     required this.headAsset,
     required this.bodyAsset,
     required this.toolAsset,
@@ -223,10 +85,20 @@ class AgentModel {
 
 class Task {
   String name;
-  Task({required this.name});
+  String description;
+  String expectedOutput;
+  String outputFile;
+
+  Task({
+    required this.name,
+    this.description = '',
+    this.expectedOutput = '',
+    this.outputFile = '',
+  });
 }
 
 class Tool {
   String name;
+
   Tool({required this.name});
 }
