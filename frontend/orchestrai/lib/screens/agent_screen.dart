@@ -500,6 +500,22 @@ class ComponentSelectionView extends StatelessWidget {
     required this.onAssetChanged,
   });
 
+  String _getAssetName(String option, String part) {
+    List<String> options = _getOptionsForPart();
+    int index = options.indexOf(option) + 1; // 1부터 시작하는 인덱스
+
+    // 각 카테고리별로 올바른 에셋 번호 반환
+    switch (part) {
+      case '머리':
+      case '도구':
+        return index.toString();
+      case '태스크':
+        // 태스크의 경우 3번부터 문제가 있으므로 조정
+        return index <= 2 ? index.toString() : (index + 1).toString();
+      default:
+        return '1';
+    }
+  }
   List<String> _getOptionsForPart() {
     switch (part) {
       case '머리':
@@ -512,6 +528,16 @@ class ComponentSelectionView extends StatelessWidget {
         return [];
     }
   }
+  String _getAssetPath(String option, String part) {
+    String assetNumber = _getAssetName(option, part);
+    String assetPrefix = part.toLowerCase();
+    if (part == '머리') assetPrefix = 'head';
+    if (part == '태스크') assetPrefix = 'body';
+    if (part == '도구') assetPrefix = 'tool'; // '태스크'는 'body' 이미지를 사용
+
+    return 'assets/${assetPrefix}_$assetNumber.png';
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -527,8 +553,10 @@ class ComponentSelectionView extends StatelessWidget {
         String option = options[index];
         bool isSelected = part == '도구' 
           ? selectedTools.any((tool) => tool.name == option)
-          : false;  // For '머리' and '태스크', we don't have a concept of multiple selections
-        
+          : false;
+
+        String assetPath = _getAssetPath(option, part);
+
         return GestureDetector(
           onTap: () => onAssetChanged(option),
           child: Card(
@@ -536,9 +564,27 @@ class ComponentSelectionView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset('assets/${part.toLowerCase()}_${index + 1}.png', height: 100),
-                Text(option, textAlign: TextAlign.center),
-                if (isSelected) Icon(Icons.check, color: Colors.green),
+                Image.asset(
+                  assetPath,
+                  height: 60,
+                  width: 60,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    print('Error loading image: $assetPath');
+                    return Icon(Icons.error, size: 40, color: Colors.red);
+                  },
+                ),
+                SizedBox(height: 4),
+                Expanded(
+                  child: Text(
+                    option,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (isSelected) Icon(Icons.check, color: Colors.green, size: 16),
               ],
             ),
           ),
@@ -547,6 +593,8 @@ class ComponentSelectionView extends StatelessWidget {
     );
   }
 }
+
+
 
 
 class ParameterSettingsView extends StatefulWidget {
