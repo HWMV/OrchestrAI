@@ -632,3 +632,68 @@ class _ParameterSettingsViewState extends State<ParameterSettingsView> {
     );
   }
 }
+class CollaborationChatScreen extends StatelessWidget {
+  final CrewModel crew;
+
+  CollaborationChatScreen({required this.crew});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('협업 진행 중'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: crew.agents.length * 2, // 각 에이전트마다 2개의 메시지를 표시
+              itemBuilder: (context, index) {
+                final agentIndex = index ~/ 2;
+                final isEven = index % 2 == 0;
+                final agent = crew.agents[agentIndex];
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CircleAvatar(
+                        backgroundImage: AssetImage('assets/head_${agent.headAsset}.png'),
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Container(
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isEven ? Colors.blue[100] : Colors.grey[200],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam non felis vel augue tincidunt faucibus.',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              child: Text('결과물 확인'),
+              onPressed: () {
+                // TODO: 결과물 확인 로직 구현
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('결과물 확인 기능은 아직 구현되지 않았습니다.')),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

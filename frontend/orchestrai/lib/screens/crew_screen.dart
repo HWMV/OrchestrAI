@@ -197,8 +197,14 @@ class _CollaborationPopupState extends State<CollaborationPopup> {
             ElevatedButton(
               child: Text('협업 실행'),
               onPressed: () {
-                // 여기에 협업 실행 로직 추가
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // 팝업 닫기
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => CollaborationChatScreen(
+                      crew: Provider.of<CrewModel>(context, listen: false),
+                    ),
+                  ),
+                );
               },
             ),
           ],
