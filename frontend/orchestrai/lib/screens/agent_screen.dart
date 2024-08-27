@@ -685,11 +685,97 @@ class CollaborationChatScreen extends StatelessWidget {
             child: ElevatedButton(
               child: Text('결과물 확인'),
               onPressed: () {
-                // TODO: 결과물 확인 로직 구현
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('결과물 확인 기능은 아직 구현되지 않았습니다.')),
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => ResultViewScreen(),
+                  ),
                 );
               },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+class ResultViewScreen extends StatefulWidget {
+  @override
+  _ResultViewScreenState createState() => _ResultViewScreenState();
+}
+
+class _ResultViewScreenState extends State<ResultViewScreen> {
+  String? selectedFile;
+  List<String> resultFiles = ['output.png', 'output.txt', 'output.csv'];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('결과물 확인'),
+      ),
+      body: Row(
+        children: [
+          // 왼쪽: 파일 목록 및 다운로드 버튼
+          Expanded(
+            flex: 1,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text('결과물 파일 목록', style: Theme.of(context).textTheme.titleLarge),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: resultFiles.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(resultFiles[index]),
+                        trailing: ElevatedButton(
+                          child: Text('다운로드'),
+                          onPressed: () {
+                            // TODO: 개별 파일 다운로드 로직 구현
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('${resultFiles[index]} 다운로드 시작')),
+                            );
+                          },
+                        ),
+                        onTap: () {
+                          setState(() {
+                            selectedFile = resultFiles[index];
+                          });
+                        },
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ElevatedButton(
+                    child: Text('전체 다운로드'),
+                    onPressed: () {
+                      // TODO: 전체 파일 다운로드 로직 구현
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('전체 파일 다운로드 시작')),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // 오른쪽: 미리보기 화면
+          Expanded(
+            flex: 2,
+            child: Container(
+              margin: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: selectedFile != null
+                  ? Center(child: Text('$selectedFile 미리보기\n(실제 미리보기 구현 필요)'))
+                  : Center(child: Text('파일을 선택하여 미리보기')),
             ),
           ),
         ],
