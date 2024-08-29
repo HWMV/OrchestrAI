@@ -83,6 +83,8 @@ class _AgentScreenState extends State<AgentScreen> {
                                            (selectedCategory == '태스크' ? CrewModel.predefinedTaskNames.length : 
                                            CrewModel.predefinedToolNames.length),
                               selectedTools: agent.tools,
+                              selectedHead: agent.name,
+                              selectedTask: agent.task.name,
                               onAssetChanged: (asset) {
                                 setState(() {
                                   switch (selectedCategory) {
@@ -278,12 +280,16 @@ class ComponentSelectionView extends StatelessWidget {
   final String part;
   final int optionCount;
   final List<Tool> selectedTools;
+  final String selectedHead;
+  final String selectedTask;
   final Function(String) onAssetChanged;
 
   ComponentSelectionView({
     required this.part,
     required this.optionCount,
     required this.selectedTools,
+    required this.selectedHead,
+    required this.selectedTask,
     required this.onAssetChanged,
   });
 
@@ -325,24 +331,32 @@ class ComponentSelectionView extends StatelessWidget {
     return 'assets/${assetPrefix}_$assetNumber.png';
   }
 
+  bool _isSelected(String option) {
+    switch (part) {
+      case '머리':
+        return option == selectedHead;
+      case '태스크':
+        return option == selectedTask;
+      case '도구':
+        return selectedTools.any((tool) => tool.name == option);
+      default:
+        return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     List<String> options = _getOptionsForPart();
 
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,  // 한 줄에 2개의 아이템만 표시
-        childAspectRatio: 1,  // 정사각형 유지
-        crossAxisSpacing: 10,  // 가로 간격
-        mainAxisSpacing: 10,  // 세로 간격
+        crossAxisCount: 4,
+        childAspectRatio: 1, // 정사각형 유지
       ),
       itemCount: options.length,
       itemBuilder: (context, index) {
         String option = options[index];
-        bool isSelected = part == '도구' 
-          ? selectedTools.any((tool) => tool.name == option)
-          : false;
-
+        bool isSelected = _isSelected(option);
         String assetPath = _getAssetPath(option, part);
 
         return GestureDetector(
@@ -353,10 +367,11 @@ class ComponentSelectionView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Expanded(
-                  flex: 3,  // 이미지에 더 많은 공간 할당
                   child: Center(
                     child: Image.asset(
                       assetPath,
+                      height: 100, // 이미지 크기 조정
+                      width: 100,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
                         print('Error loading image: $assetPath');
@@ -365,20 +380,21 @@ class ComponentSelectionView extends StatelessWidget {
                     ),
                   ),
                 ),
-                Expanded(
-                  flex: 1,  // 텍스트에 적은 공간 할당
-                  child: Padding(
-                    padding: EdgeInsets.only(bottom: 10),  // 하단 마진 추가
-                    child: Text(
-                      option,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0), // 하단 여백 추가
+                  child: Text(
+                    option,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (isSelected) Icon(Icons.check, color: Colors.green, size: 16),
+                if (isSelected) 
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4.0),
+                    child: Icon(Icons.check, color: Colors.green, size: 16),
+                  ),
               ],
             ),
           ),
