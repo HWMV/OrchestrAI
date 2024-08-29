@@ -1,216 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-// import '../models/crew_model.dart';
-
-
-// class AgentScreen extends StatefulWidget {
-//   final int agentIndex;
-
-//   AgentScreen({required this.agentIndex});
-
-//   @override
-//   _AgentScreenState createState() => _AgentScreenState();
-// }
-
-// class _AgentScreenState extends State<AgentScreen> {
-//   String selectedCategory = '';
-//   late AgentModel agent;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     WidgetsBinding.instance.addPostFrameCallback((_) {
-//       agent = Provider.of<CrewModel>(context, listen: false)
-//           .agents[widget.agentIndex];
-//       setState(() {});
-//     });
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Consumer<CrewModel>(
-//       builder: (context, crewModel, child) {
-//         agent = crewModel.agents[widget.agentIndex];
-//         return Scaffold(
-//           appBar: AppBar(
-//             title: Text('AI에이전트를 만들어보세요'),
-//           ),
-//           body: Row(
-//             children: [
-//               Expanded(
-//                 flex: 1,
-//                 child: AssembledAgentView(agent: agent),
-//               ),
-//               Expanded(
-//                 flex: 3,
-//                 child: Column(
-//                   children: [
-//                     CategorySelectionView(
-//                       onCategorySelected: (category) {
-//                         setState(() {
-//                           selectedCategory = category;
-//                         });
-//                       },
-//                     ),
-//                     Expanded(
-//                       child: selectedCategory.isNotEmpty
-//                           ? ComponentSelectionView(
-//                               part: selectedCategory,
-//                               optionCount: selectedCategory == '머리' ? CrewModel.predefinedAgentNames.length : 
-//                                            (selectedCategory == '태스크' ? CrewModel.predefinedTaskNames.length : 
-//                                            CrewModel.predefinedToolNames.length),
-//                               selectedTools: agent.tools,
-//                               onAssetChanged: (asset) {
-//                                 setState(() {
-//                                   switch (selectedCategory) {
-//                                     case '머리':
-//                                       agent.name = asset;
-//                                       break;
-//                                     case '태스크':
-//                                       agent.task.name = asset;
-//                                       break;
-//                                     case '도구':
-//                                       if (!agent.tools.any((tool) => tool.name == asset)) {
-//                                         agent.tools.add(Tool(name: asset));
-//                                       }
-//                                       break;
-//                                   }
-//                                 });
-//                                 crewModel.updateAgent(agent);
-//                               },
-//                             )
-//                           : Center(child: Text('카테고리를 선택해주세요')),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//               Expanded(
-//                 flex: 1,
-//                 child: ParameterSettingsView(
-//                   agent: agent,
-//                   selectedPart: selectedCategory,
-//                 ),
-//               ),
-//             ],
-//           ),
-//         );
-//       },
-//     );
-//   }
-// }
-
-//   //이부분 새로 추가함
-//   void _toggleTool(String assetName) {
-//   setState(() {
-//     int index = agent.tools.indexWhere((tool) => tool.name == assetName);
-//     if (index != -1) {
-//       // 이미 선택된 도구라면 제거
-//       agent.tools.removeAt(index);
-//     } else if (agent.tools.length < 4) {
-//       // 새로운 도구이고 4개 미만이라면 추가
-//       agent.tools.add(Tool(name: assetName));
-//     }
-//   });
-// }
-
-//   bool _validateAgent() {
-//     return agent.name.isNotEmpty &&
-//         agent.role.isNotEmpty &&
-//         agent.goal.isNotEmpty &&
-//         agent.task.name.isNotEmpty &&
-//         agent.tools.isNotEmpty;
-//   }
-
-//   void _completeAgentCreation(CrewModel crewModel) {
-//     crewModel.updateAgent(agent);
-//     // 추가적인 완료 로직 구현 가능
-//   }
-// }
-
-
-
-
-
-
-// 
-
-// class ParameterSettingsView extends StatefulWidget {
-//   final AgentModel agent;
-//   final String selectedPart;
-
-//   ParameterSettingsView({required this.agent, required this.selectedPart});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     String title = '${selectedPart.isNotEmpty ? selectedPart : "컴포넌트"} 세부사항 설정';
-//     String selectedName = '';
-    
-//     switch (selectedPart) {
-//       case '머리':
-//         selectedName = agent.name;
-//         break;
-//       case '태스크':
-//         selectedName = agent.task.name;
-//         break;
-//       case '도구':
-//         selectedName = agent.tools.isNotEmpty ? agent.tools.last.name : '선택된 도구 없음';
-//         break;
-//     }
-
-//     return SingleChildScrollView(
-//       child: Padding(
-//         padding: const EdgeInsets.all(8.0),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             Text(title, style: Theme.of(context).textTheme.titleLarge),
-//             SizedBox(height: 20),
-//             Text('선택된 ${selectedPart}: $selectedName', style: Theme.of(context).textTheme.titleMedium),
-//             SizedBox(height: 20),
-//             // 여기에 추가적인 파라미터 설정 필드들을 넣을 수 있습니다.
-//             if (selectedPart == '머리') ...[
-//               TextField(
-//                 decoration: InputDecoration(labelText: '역할'),
-//                 onChanged: (value) => agent.role = value,
-//               ),
-//               TextField(
-//                 decoration: InputDecoration(labelText: '목표'),
-//                 onChanged: (value) => agent.goal = value,
-//               ),
-//               TextField(
-//                 decoration: InputDecoration(labelText: '배경 이야기'),
-//                 maxLines: 3,
-//                 onChanged: (value) => agent.backstory = value,
-//               ),
-//             ] else if (selectedPart == '태스크') ...[
-//               TextField(
-//                 decoration: InputDecoration(labelText: '태스크 설명'),
-//                 maxLines: 3,
-//                 onChanged: (value) => agent.task.description = value,
-//               ),
-//               TextField(
-//                 decoration: InputDecoration(labelText: '예상 결과'),
-//                 onChanged: (value) => agent.task.expectedOutput = value,
-//               ),
-//             ] else if (selectedPart == '도구') ...[
-//               Text('선택된 도구 목록:', style: Theme.of(context).textTheme.titleMedium),
-//               ...agent.tools.map((tool) => ListTile(
-//                 title: Text(tool.name),
-//                 trailing: IconButton(
-//                   icon: Icon(Icons.delete),
-//                   onPressed: () {
-//                     agent.tools.remove(tool);
-//                     // 여기서 상태 업데이트 로직 추가 (예: Provider 사용)
-//                   },
-//                 ),
-//               )).toList(),
-//             ],
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/crew_model.dart';
@@ -261,6 +48,18 @@ class _AgentScreenState extends State<AgentScreen> {
     crewModel.updateAgent(agent);
     // 추가적인 완료 로직 구현 가능
   }
+  void _updateAgentAsset(String asset, String category) {
+    setState(() {
+      switch (category) {
+        case '머리':
+          agent.headAsset = asset;
+          break;
+        case '태스크':
+          agent.bodyAsset = asset;
+          break;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -296,14 +95,18 @@ class _AgentScreenState extends State<AgentScreen> {
                                            (selectedCategory == '태스크' ? CrewModel.predefinedTaskNames.length : 
                                            CrewModel.predefinedToolNames.length),
                               selectedTools: agent.tools,
+                              selectedHead: agent.name,
+                              selectedTask: agent.task.name,
                               onAssetChanged: (asset) {
                                 setState(() {
                                   switch (selectedCategory) {
                                     case '머리':
                                       agent.name = asset;
+                                      _updateAgentAsset(_getAssetName(asset, '머리'), '머리');
                                       break;
                                     case '태스크':
                                       agent.task.name = asset;
+                                      _updateAgentAsset(_getAssetName(asset, '태스크'), '태스크');
                                       break;
                                     case '도구':
                                       _toggleTool(asset);
@@ -344,7 +147,14 @@ class _AgentScreenState extends State<AgentScreen> {
       },
     );
   }
+  String _getAssetName(String option, String part) {
+    List<String> options = part == '머리' ? CrewModel.predefinedAgentNames : CrewModel.predefinedTaskNames;
+    int index = options.indexOf(option) + 1;
+    return index.toString();
+  }
 }
+
+
 
 class AssembledAgentView extends StatelessWidget {
   final AgentModel agent;
@@ -369,8 +179,8 @@ class AssembledAgentView extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Image.asset('assets/${_getAssetPrefix("머리")}_${agent.headAsset}.png', height: 150),
-        Image.asset('assets/${_getAssetPrefix("태스크")}_${agent.bodyAsset}.png', height: 150),
+        Image.asset('assets/head_${agent.headAsset}.png', height: 150),
+        Image.asset('assets/body_${agent.bodyAsset}.png', height: 150),
         SizedBox(height: 20),
         Text('선택된 도구 (1-4):', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         SizedBox(height: 10),
@@ -491,14 +301,33 @@ class ComponentSelectionView extends StatelessWidget {
   final String part;
   final int optionCount;
   final List<Tool> selectedTools;
+  final String selectedHead;
+  final String selectedTask;
   final Function(String) onAssetChanged;
 
   ComponentSelectionView({
     required this.part,
     required this.optionCount,
     required this.selectedTools,
+    required this.selectedHead,
+    required this.selectedTask,
     required this.onAssetChanged,
   });
+
+  String _getAssetName(String option, String part) {
+    List<String> options = _getOptionsForPart();
+    int index = options.indexOf(option) + 1;
+
+    switch (part) {
+      case '머리':
+      case '도구':
+        return index.toString();
+      case '태스크':
+        return index <= 2 ? index.toString() : (index + 1).toString();
+      default:
+        return '1';
+    }
+  }
 
   List<String> _getOptionsForPart() {
     switch (part) {
@@ -513,6 +342,29 @@ class ComponentSelectionView extends StatelessWidget {
     }
   }
 
+  String _getAssetPath(String option, String part) {
+    String assetNumber = _getAssetName(option, part);
+    String assetPrefix = part.toLowerCase();
+    if (part == '머리') assetPrefix = 'head';
+    if (part == '태스크') assetPrefix = 'body';
+    if (part == '도구') assetPrefix = 'tool';
+
+    return 'assets/${assetPrefix}_$assetNumber.png';
+  }
+
+  bool _isSelected(String option) {
+    switch (part) {
+      case '머리':
+        return option == selectedHead;
+      case '태스크':
+        return option == selectedTask;
+      case '도구':
+        return selectedTools.any((tool) => tool.name == option);
+      default:
+        return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     List<String> options = _getOptionsForPart();
@@ -520,15 +372,14 @@ class ComponentSelectionView extends StatelessWidget {
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
-        childAspectRatio: 1,
+        childAspectRatio: 1, // 정사각형 유지
       ),
       itemCount: options.length,
       itemBuilder: (context, index) {
         String option = options[index];
-        bool isSelected = part == '도구' 
-          ? selectedTools.any((tool) => tool.name == option)
-          : false;  // For '머리' and '태스크', we don't have a concept of multiple selections
-        
+        bool isSelected = _isSelected(option);
+        String assetPath = _getAssetPath(option, part);
+
         return GestureDetector(
           onTap: () => onAssetChanged(option),
           child: Card(
@@ -536,9 +387,35 @@ class ComponentSelectionView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset('assets/${part.toLowerCase()}_${index + 1}.png', height: 100),
-                Text(option, textAlign: TextAlign.center),
-                if (isSelected) Icon(Icons.check, color: Colors.green),
+                Expanded(
+                  child: Center(
+                    child: Image.asset(
+                      assetPath,
+                      height: 100, // 이미지 크기 조정
+                      width: 100,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        print('Error loading image: $assetPath');
+                        return Icon(Icons.error, size: 60, color: Colors.red);
+                      },
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0), // 하단 여백 추가
+                  child: Text(
+                    option,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (isSelected) 
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4.0),
+                    child: Icon(Icons.check, color: Colors.green, size: 16),
+                  ),
               ],
             ),
           ),
@@ -547,6 +424,8 @@ class ComponentSelectionView extends StatelessWidget {
     );
   }
 }
+
+
 
 
 class ParameterSettingsView extends StatefulWidget {
@@ -610,6 +489,35 @@ class _ParameterSettingsViewState extends State<ParameterSettingsView> {
               TextField(
                 decoration: InputDecoration(labelText: '예상 결과'),
                 onChanged: (value) => widget.agent.task.expectedOutput = value,
+              ),
+              SizedBox(height: 20),
+              Text('아웃풋 파일:', style: Theme.of(context).textTheme.titleMedium),
+              SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: ['PNG', 'TXT', 'CSV'].map((fileType) {
+                  bool isSelected = widget.agent.task.outputFiles.contains(fileType);
+                  return ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isSelected ? Color(0xFF6050DC) : Colors.grey[300],
+                      foregroundColor: isSelected ? Colors.white : Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0),
+                      ),
+                    ),
+                    child: Text(fileType),
+                    onPressed: () {
+                      setState(() {
+                        if (isSelected) {
+                          widget.agent.task.outputFiles.remove(fileType);
+                        } else {
+                          widget.agent.task.outputFiles.add(fileType);
+                        }
+                      });
+                    },
+                  );
+                }).toList(),
               ),
             ] else if (widget.selectedPart == '도구') ...[
               Text('선택된 도구 목록:', style: Theme.of(context).textTheme.titleMedium),

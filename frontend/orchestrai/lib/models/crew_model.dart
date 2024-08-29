@@ -5,7 +5,7 @@ class CrewModel extends ChangeNotifier {
 
    // 사전 정의된 이름 목록 추가
   static const List<String> predefinedAgentNames = [
-    '연구원', '데이터 분석가', '스크립트라이터', '일러스트레이터', '개발자', '작가', '금융전문가', '고객서비스', '학자', '커스텀에이전트'
+    '마켓분석가', '마케팅 전략가', '콘텐츠 창작자', '포토그래퍼', '크리에이티브 디렉터', '리서처', '테크니컬 분석가', '재무분석가', '투자추천 전문가', '커스텀 에이전트'
   ];
 
   static const List<String> predefinedTaskNames = [
@@ -87,14 +87,14 @@ class Task {
   String name;
   String description;
   String expectedOutput;
-  String outputFile;
+  List<String> outputFiles;
 
   Task({
     required this.name,
     this.description = '',
     this.expectedOutput = '',
-    this.outputFile = '',
-  });
+    List<String>? outputFiles,
+  }) : this.outputFiles = outputFiles ?? [];
 }
 
 class Tool {
