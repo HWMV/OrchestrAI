@@ -48,6 +48,18 @@ class _AgentScreenState extends State<AgentScreen> {
     crewModel.updateAgent(agent);
     // 추가적인 완료 로직 구현 가능
   }
+  void _updateAgentAsset(String asset, String category) {
+    setState(() {
+      switch (category) {
+        case '머리':
+          agent.headAsset = asset;
+          break;
+        case '태스크':
+          agent.bodyAsset = asset;
+          break;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,9 +102,11 @@ class _AgentScreenState extends State<AgentScreen> {
                                   switch (selectedCategory) {
                                     case '머리':
                                       agent.name = asset;
+                                      _updateAgentAsset(_getAssetName(asset, '머리'), '머리');
                                       break;
                                     case '태스크':
                                       agent.task.name = asset;
+                                      _updateAgentAsset(_getAssetName(asset, '태스크'), '태스크');
                                       break;
                                     case '도구':
                                       _toggleTool(asset);
@@ -133,7 +147,14 @@ class _AgentScreenState extends State<AgentScreen> {
       },
     );
   }
+  String _getAssetName(String option, String part) {
+    List<String> options = part == '머리' ? CrewModel.predefinedAgentNames : CrewModel.predefinedTaskNames;
+    int index = options.indexOf(option) + 1;
+    return index.toString();
+  }
 }
+
+
 
 class AssembledAgentView extends StatelessWidget {
   final AgentModel agent;
@@ -158,8 +179,8 @@ class AssembledAgentView extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Image.asset('assets/${_getAssetPrefix("머리")}_${agent.headAsset}.png', height: 150),
-        Image.asset('assets/${_getAssetPrefix("태스크")}_${agent.bodyAsset}.png', height: 150),
+        Image.asset('assets/head_${agent.headAsset}.png', height: 150),
+        Image.asset('assets/body_${agent.bodyAsset}.png', height: 150),
         SizedBox(height: 20),
         Text('선택된 도구 (1-4):', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         SizedBox(height: 10),
