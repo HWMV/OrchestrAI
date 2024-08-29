@@ -87,14 +87,14 @@ class Task {
   String name;
   String description;
   String expectedOutput;
-  String outputFile;
+  List<String> outputFiles;
 
   Task({
     required this.name,
     this.description = '',
     this.expectedOutput = '',
-    this.outputFile = '',
-  });
+    List<String>? outputFiles,
+  }) : this.outputFiles = outputFiles ?? [];
 }
 
 class Tool {

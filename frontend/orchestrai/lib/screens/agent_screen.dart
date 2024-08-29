@@ -490,6 +490,35 @@ class _ParameterSettingsViewState extends State<ParameterSettingsView> {
                 decoration: InputDecoration(labelText: '예상 결과'),
                 onChanged: (value) => widget.agent.task.expectedOutput = value,
               ),
+              SizedBox(height: 20),
+              Text('아웃풋 파일:', style: Theme.of(context).textTheme.titleMedium),
+              SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: ['PNG', 'TXT', 'CSV'].map((fileType) {
+                  bool isSelected = widget.agent.task.outputFiles.contains(fileType);
+                  return ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isSelected ? Color(0xFF6050DC) : Colors.grey[300],
+                      foregroundColor: isSelected ? Colors.white : Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0),
+                      ),
+                    ),
+                    child: Text(fileType),
+                    onPressed: () {
+                      setState(() {
+                        if (isSelected) {
+                          widget.agent.task.outputFiles.remove(fileType);
+                        } else {
+                          widget.agent.task.outputFiles.add(fileType);
+                        }
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
             ] else if (widget.selectedPart == '도구') ...[
               Text('선택된 도구 목록:', style: Theme.of(context).textTheme.titleMedium),
               ...widget.agent.tools.map((tool) => ListTile(
