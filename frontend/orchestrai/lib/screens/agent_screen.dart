@@ -26,15 +26,17 @@ class _AgentScreenState extends State<AgentScreen> {
   }
 
   void _toggleTool(String assetName) {
-    setState(() {
-      int index = agent.tools.indexWhere((tool) => tool.name == assetName);
-      if (index != -1) {
-        agent.tools.removeAt(index);
-      } else if (agent.tools.length < 4) {
-        agent.tools.add(Tool(name: assetName));
-      }
-    });
-  }
+  setState(() {
+    int index = agent.tools.indexWhere((tool) => tool.name == assetName);
+    if (index != -1) {
+      agent.tools.removeAt(index);
+    } else if (agent.tools.length < 4) {
+      agent.tools.add(Tool(name: assetName));
+    }
+    // agent 객체 업데이트
+    Provider.of<CrewModel>(context, listen: false).updateAgent(agent);
+  });
+}
 
   bool _validateAgent() {
     return agent.name.isNotEmpty &&
@@ -74,7 +76,11 @@ class _AgentScreenState extends State<AgentScreen> {
             children: [
               Expanded(
                 flex: 1,
-                child: AssembledAgentView(agent: agent),
+                child: Consumer<CrewModel>(
+                  builder: (context, crewModel, child) {
+                    return AssembledAgentView(agent: crewModel.agents[widget.agentIndex]);
+                  },
+                ),
               ),
               Expanded(
                 flex: 3,
@@ -103,6 +109,11 @@ class _AgentScreenState extends State<AgentScreen> {
                                     case '머리':
                                       agent.name = asset;
                                       _updateAgentAsset(_getAssetName(asset, '머리'), '머리');
+                                      // 기본값 설정
+                                      var details = CrewModel.predefinedAgentDetails[asset] ?? {};
+                                      agent.role = details['role'] ?? '';
+                                      agent.goal = details['goal'] ?? '';
+                                      agent.backstory = details['backstory'] ?? '';
                                       break;
                                     case '태스크':
                                       agent.task.name = asset;
@@ -217,17 +228,7 @@ class AssembledAgentView extends StatelessWidget {
         color: hasToolAtIndex ? Colors.yellow[100] : Colors.grey[200],
       ),
       child: hasToolAtIndex
-          ? Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildToolImage(tool!),
-                Text(
-                  tool.name,
-                  style: TextStyle(fontSize: 10),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            )
+          ? _buildToolImage(tool!)
           : Center(
               child: Text(
                 index == 0 && agent.tools.isEmpty ? 'Required' : 'Optional',
@@ -241,14 +242,25 @@ class AssembledAgentView extends StatelessWidget {
   Widget _buildToolImage(Tool tool) {
     String imageAsset = 'assets/tool_${tool.name}.png';
 
-    return Image.asset(
-      imageAsset,
-      height: 50,
-      width: 50,
-      fit: BoxFit.contain,
-      errorBuilder: (context, error, stackTrace) {
-        return Icon(Icons.build, size: 50); // 이미지 로드 실패 시 기본 아이콘
-      },
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Image.asset(
+          imageAsset,
+          height: 50,
+          width: 50,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(Icons.build, size: 50); // 이미지 로드 실패 시 기본 아이콘
+          },
+        ),
+        SizedBox(height: 4),
+        Text(
+          tool.name,
+          style: TextStyle(fontSize: 10),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 }
@@ -439,11 +451,44 @@ class ParameterSettingsView extends StatefulWidget {
 }
 
 class _ParameterSettingsViewState extends State<ParameterSettingsView> {
+  late TextEditingController _roleController;
+  late TextEditingController _goalController;
+  late TextEditingController _backstoryController;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeControllers();
+  }
+
+  void _initializeControllers() {
+    var details = CrewModel.predefinedAgentDetails[widget.agent.name] ?? {};
+    _roleController = TextEditingController(text: widget.agent.role.isEmpty ? details['role'] ?? '' : widget.agent.role);
+    _goalController = TextEditingController(text: widget.agent.goal.isEmpty ? details['goal'] ?? '' : widget.agent.goal);
+    _backstoryController = TextEditingController(text: widget.agent.backstory.isEmpty ? details['backstory'] ?? '' : widget.agent.backstory);
+  }
+
+  @override
+  void didUpdateWidget(ParameterSettingsView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.agent.name != widget.agent.name) {
+      _initializeControllers();
+    }
+  }
+
+  @override
+  void dispose() {
+    _roleController.dispose();
+    _goalController.dispose();
+    _backstoryController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     String title = '${widget.selectedPart.isNotEmpty ? widget.selectedPart : "컴포넌트"} 세부사항 설정';
     String selectedName = '';
-    
+
     switch (widget.selectedPart) {
       case '머리':
         selectedName = widget.agent.name;
@@ -468,25 +513,39 @@ class _ParameterSettingsViewState extends State<ParameterSettingsView> {
             SizedBox(height: 20),
             if (widget.selectedPart == '머리') ...[
               TextField(
+                controller: _roleController,
                 decoration: InputDecoration(labelText: '역할'),
-                onChanged: (value) => widget.agent.role = value,
+                onChanged: (value) {
+                  widget.agent.role = value;
+                  Provider.of<CrewModel>(context, listen: false).updateAgent(widget.agent);
+                },
               ),
               TextField(
+                controller: _goalController,
                 decoration: InputDecoration(labelText: '목표'),
-                onChanged: (value) => widget.agent.goal = value,
+                onChanged: (value) {
+                  widget.agent.goal = value;
+                  Provider.of<CrewModel>(context, listen: false).updateAgent(widget.agent);
+                },
               ),
               TextField(
+                controller: _backstoryController,
                 decoration: InputDecoration(labelText: '배경 이야기'),
                 maxLines: 3,
-                onChanged: (value) => widget.agent.backstory = value,
+                onChanged: (value) {
+                  widget.agent.backstory = value;
+                  Provider.of<CrewModel>(context, listen: false).updateAgent(widget.agent);
+                },
               ),
             ] else if (widget.selectedPart == '태스크') ...[
               TextField(
+                controller: TextEditingController(text: widget.agent.task.description),
                 decoration: InputDecoration(labelText: '태스크 설명'),
                 maxLines: 3,
                 onChanged: (value) => widget.agent.task.description = value,
               ),
               TextField(
+                controller: TextEditingController(text: widget.agent.task.expectedOutput),
                 decoration: InputDecoration(labelText: '예상 결과'),
                 onChanged: (value) => widget.agent.task.expectedOutput = value,
               ),
