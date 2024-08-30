@@ -312,6 +312,7 @@ class ParameterSettingsView extends StatefulWidget {
 }
 
 class _ParameterSettingsViewState extends State<ParameterSettingsView> {
+  final _formKey = GlobalKey<FormState>();
   late TextEditingController _roleController;
   late TextEditingController _goalController;
   late TextEditingController _backstoryController;
@@ -354,99 +355,133 @@ class _ParameterSettingsViewState extends State<ParameterSettingsView> {
     super.dispose();
   }
 
+  void _saveForm() {
+    if (_formKey.currentState!.validate()) {
+      if (widget.selectedPart == '머리') {
+        widget.onParameterChanged(
+          _roleController.text,
+          _goalController.text,
+          _backstoryController.text,
+        );
+      } else if (widget.selectedPart == '태스크') {
+        widget.onTaskParameterChanged(
+          _taskDescriptionController.text,
+          _taskExpectedOutputController.text,
+          _outputFiles,
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('${widget.agent.role}',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            if (widget.selectedPart == '머리') ...[
-              TextField(
-                controller: _roleController,
-                decoration: InputDecoration(labelText: '역할'),
-                onChanged: (value) => widget.onParameterChanged(
-                    value, _goalController.text, _backstoryController.text),
-              ),
-              TextField(
-                controller: _goalController,
-                decoration: InputDecoration(labelText: '목표'),
-                onChanged: (value) => widget.onParameterChanged(
-                    _roleController.text, value, _backstoryController.text),
-              ),
-              TextField(
-                controller: _backstoryController,
-                decoration: InputDecoration(labelText: '배경 이야기'),
-                maxLines: 3,
-                onChanged: (value) => widget.onParameterChanged(
-                    _roleController.text, _goalController.text, value),
-              ),
-            ] else if (widget.selectedPart == '태스크') ...[
-              Text('태스크 이름: ${widget.agent.task?.displayName ?? ''}',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('${widget.agent.role}',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 10),
-              TextField(
-                controller: _taskDescriptionController,
-                decoration: InputDecoration(labelText: '태스크 설명'),
-                maxLines: 3,
-                onChanged: (value) => widget.onTaskParameterChanged(
-                    value, _taskExpectedOutputController.text, _outputFiles),
-              ),
-              TextFormField(
-                controller: _taskExpectedOutputController,
-                decoration: InputDecoration(
-                  labelText: '예상 결과',
-                  errorText: _taskExpectedOutputController.text.isEmpty
-                      ? '예상 결과는 필수입니다'
-                      : null,
+              if (widget.selectedPart == '머리') ...[
+                TextFormField(
+                  controller: _roleController,
+                  decoration: InputDecoration(labelText: '역할'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return '역할은 필수입니다';
+                    }
+                    return null;
+                  },
                 ),
-                onChanged: (value) {
-                  if (value.isNotEmpty) {
-                    widget.onTaskParameterChanged(
-                      _taskDescriptionController.text,
-                      value,
-                      _outputFiles,
-                    );
-                  }
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '예상 결과는 필수입니다';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 20),
-              Text('출력 파일', style: Theme.of(context).textTheme.titleMedium),
-              ..._outputFiles.asMap().entries.map((entry) {
-                int index = entry.key;
-                String file = entry.value;
-                return Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(labelText: '파일 이름'),
-                        controller: TextEditingController(text: file),
-                        onChanged: (value) => _updateOutputFile(index, value),
+                TextFormField(
+                  controller: _goalController,
+                  decoration: InputDecoration(labelText: '목표'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return '목표는 필수입니다';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _backstoryController,
+                  decoration: InputDecoration(labelText: '배경 이야기'),
+                  maxLines: 3,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return '배경 이야기는 필수입니다';
+                    }
+                    return null;
+                  },
+                ),
+              ] else if (widget.selectedPart == '태스크') ...[
+                Text('태스크 이름: ${widget.agent.task?.displayName ?? ''}',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: _taskDescriptionController,
+                  decoration: InputDecoration(labelText: '태스크 설명'),
+                  maxLines: 3,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return '태스크 설명은 필수입니다';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _taskExpectedOutputController,
+                  decoration: InputDecoration(
+                    labelText: '예상 결과',
+                    errorText: _taskExpectedOutputController.text.isEmpty
+                        ? '예상 결과는 필수입니다'
+                        : null,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return '예상 결과는 필수입니다';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 20),
+                Text('출력 파일', style: Theme.of(context).textTheme.titleMedium),
+                ..._outputFiles.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  String file = entry.value;
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          decoration: InputDecoration(labelText: '파일 이름'),
+                          initialValue: file,
+                          onChanged: (value) => _updateOutputFile(index, value),
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.remove),
-                      onPressed: () => _removeOutputFile(index),
-                    ),
-                  ],
-                );
-              }).toList(),
+                      IconButton(
+                        icon: Icon(Icons.remove),
+                        onPressed: () => _removeOutputFile(index),
+                      ),
+                    ],
+                  );
+                }).toList(),
+                ElevatedButton(
+                  onPressed: _addOutputFile,
+                  child: Text('출력 파일 추가'),
+                ),
+              ],
+              SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _addOutputFile,
-                child: Text('출력 파일 추가'),
+                onPressed: _saveForm,
+                child: Text('저장'),
               ),
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -456,23 +491,17 @@ class _ParameterSettingsViewState extends State<ParameterSettingsView> {
     setState(() {
       _outputFiles[index] = value;
     });
-    widget.onTaskParameterChanged(_taskDescriptionController.text,
-        _taskExpectedOutputController.text, _outputFiles);
   }
 
   void _removeOutputFile(int index) {
     setState(() {
       _outputFiles.removeAt(index);
     });
-    widget.onTaskParameterChanged(_taskDescriptionController.text,
-        _taskExpectedOutputController.text, _outputFiles);
   }
 
   void _addOutputFile() {
     setState(() {
       _outputFiles.add('');
     });
-    widget.onTaskParameterChanged(_taskDescriptionController.text,
-        _taskExpectedOutputController.text, _outputFiles);
   }
 }
