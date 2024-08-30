@@ -1,20 +1,90 @@
-// import 'package:http/http.dart' as http;
-// import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../models/crew_model.dart';
 
-// class ApiService {
-//   final String baseUrl = 'https://your-backend-url.com/api';
+class ApiService {
+  final String baseUrl = 'http://localhost:8000'; // 백엔드 서버 주소
 
-//   Future> createWorkflow(Map data) async {
-//     final response = await http.post(
-//       Uri.parse('$baseUrl/create-workflow'),
-//       headers: {'Content-Type': 'application/json'},
-//       body: json.encode(data),
-//     );
+  // 사용 가능한 도구 목록을 반환하는 엔드포인트
+  Future<List<Map<String, String>>> getAvailableTools() async {
+    try {
+      print('Requesting available tools from: $baseUrl/available_tools');
+      final response = await http.get(Uri.parse('$baseUrl/available_tools'));
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
-//     if (response.statusCode == 200) {
-//       return json.decode(response.body);
-//     } else {
-//       throw Exception('Failed to create workflow');
-//     }
-//   }
-// }
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final toolsList = data['tools'] as List;
+        return toolsList
+            .map((tool) => {
+                  'name': tool['name'] as String,
+                  'description': tool['description'] as String,
+                })
+            .toList();
+      } else {
+        throw Exception(
+            'Failed to load available tools. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error in getAvailableTools: $e');
+      throw Exception('Failed to load available tools: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> executeCrew(CrewModel crew) async {
+    try {
+      final requestBody = json.encode({
+        'crew_resources': {
+          'agents': crew.agents
+              .where((agent) => agent != null)
+              .map((agent) => agentToJson(agent!))
+              .toList(),
+          'tasks': crew.agents
+              .where((agent) => agent != null)
+              .map((agent) => taskToJson(agent!.task, agent.name))
+              .toList(),
+        },
+      });
+
+      print('Request body: $requestBody'); // 백엔드 데이터 형식을 맞추기 위한 로그 추가
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/execute_crew'),
+        headers: {'Content-Type': 'application/json'},
+        body: requestBody,
+      );
+
+      print('Response status: ${response.statusCode}'); // 데이터 형식 맞추기 위해 추가된 로그
+      print('Response body: ${response.body}'); // 데이터 형식 맞추기 위해 추가된 로그
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('Failed to execute crew: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error executing crew: $e');
+    }
+  }
+
+  Map<String, dynamic> agentToJson(AgentModel agent) {
+    return {
+      'name': agent.name,
+      'role': agent.role,
+      'goal': agent.goal,
+      'backstory': agent.backstory,
+      'tools': agent.tools,
+    };
+  }
+
+  Map<String, dynamic> taskToJson(Task task, String agentName) {
+    return {
+      'name': task.name,
+      'description': task.description,
+      'target_agent': agentName,
+      'expected_output': task.expectedOutput,
+      'output_files': task.outputFiles,
+    };
+  }
+}

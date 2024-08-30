@@ -6,7 +6,7 @@ import 'screens/crew_screen.dart';
 void main() {
   runApp(
     ChangeNotifierProvider(
-      create: (context) => CrewModel()..addDummyData(),
+      create: (context) => CrewModel(), //..addDummyData(),
       child: OrchestrAIApp(),
     ),
   );
