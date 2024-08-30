@@ -257,8 +257,8 @@ class AgentListItem extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: 5),
       child: ListTile(
         leading: Icon(Icons.drag_handle),
-        title: Text(agent.name),
-        subtitle: Text('태스크: ${agent.task.name}'),
+        title: Text(agent.role),
+        subtitle: Text('태스크: ${agent.task?.displayName ?? '할당된 태스크 없음'}'),
         trailing: Icon(Icons.more_vert),
       ),
     );

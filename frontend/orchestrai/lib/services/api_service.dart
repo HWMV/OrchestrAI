@@ -1,6 +1,5 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../models/crew_model.dart';
 
 class ApiService {
   final String baseUrl = 'http://localhost:8000'; // 백엔드 서버 주소
@@ -32,31 +31,17 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> executeCrew(CrewModel crew) async {
+  Future<Map<String, dynamic>> executeCrew(
+      Map<String, dynamic> crewData) async {
     try {
-      final requestBody = json.encode({
-        'crew_resources': {
-          'agents': crew.agents
-              .where((agent) => agent != null)
-              .map((agent) => agentToJson(agent!))
-              .toList(),
-          'tasks': crew.agents
-              .where((agent) => agent != null)
-              .map((agent) => taskToJson(agent!.task, agent.name))
-              .toList(),
-        },
-      });
-
-      print('Request body: $requestBody'); // 백엔드 데이터 형식을 맞추기 위한 로그 추가
-
       final response = await http.post(
         Uri.parse('$baseUrl/execute_crew'),
         headers: {'Content-Type': 'application/json'},
-        body: requestBody,
+        body: json.encode(crewData),
       );
 
-      print('Response status: ${response.statusCode}'); // 데이터 형식 맞추기 위해 추가된 로그
-      print('Response body: ${response.body}'); // 데이터 형식 맞추기 위해 추가된 로그
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         return json.decode(response.body);
@@ -66,25 +51,5 @@ class ApiService {
     } catch (e) {
       throw Exception('Error executing crew: $e');
     }
-  }
-
-  Map<String, dynamic> agentToJson(AgentModel agent) {
-    return {
-      'name': agent.name,
-      'role': agent.role,
-      'goal': agent.goal,
-      'backstory': agent.backstory,
-      'tools': agent.tools,
-    };
-  }
-
-  Map<String, dynamic> taskToJson(Task task, String agentName) {
-    return {
-      'name': task.name,
-      'description': task.description,
-      'target_agent': agentName,
-      'expected_output': task.expectedOutput,
-      'output_files': task.outputFiles,
-    };
   }
 }

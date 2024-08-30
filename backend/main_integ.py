@@ -33,14 +33,13 @@ class Tool(BaseModel):
 
 # tools 사용을 위해 AgentModel 수정 240830
 class AgentModel(BaseModel):
-    name: str
     role: str
     goal: str
     backstory: str
     tools: List[str]  # 도구 이름 목록으로 변경
+    task_description: Optional[str] = None
 
 class TaskModel(BaseModel):
-    name: str
     description: str
     target_agent: str
     expected_output: str
@@ -64,14 +63,13 @@ async def get_available_tools():
 
 @app.post("/execute_crew")
 async def execute_crew(data: InputData):
-    print(f"Received data: {data.dict()}")  # 데이터 형식 맞추기 위해 추가된 로그
+    print(f"Received data: {data.dict()}")
     try:
-        # CrewAI 객체 생성
         agents = []
         for agent_data in data.crew_resources.agents['agent_list']:
+            print(f"Processing agent: {agent_data}")
             agent_tools = [getattr(SearchTools, tool_name) for tool_name in agent_data.tools if hasattr(SearchTools, tool_name)]
             agent = Agent(
-                name=agent_data.name,
                 role=agent_data.role,
                 goal=agent_data.goal,
                 backstory=agent_data.backstory,
@@ -80,11 +78,13 @@ async def execute_crew(data: InputData):
             agents.append(agent)
 
         tasks = []
-        for task_name, task_data in data.crew_resources.tasks.items():
+        for task_description, task_data in data.crew_resources.tasks.items():
             task = Task(
                 description=task_data.description,
-                agent=next(agent for agent in agents if agent.name == task_data.target_agent)
+                agent=next((agent for agent in agents if agent.role == task_data.target_agent), None)
             )
+            if task.agent is None:
+                raise ValueError(f"No matching agent found for task: {task_description}")
             tasks.append(task)
 
         crew = Crew(
@@ -92,7 +92,6 @@ async def execute_crew(data: InputData):
             tasks=tasks
         )
 
-        # Crew 실행
         result = crew.kickoff()
 
         return {
@@ -100,7 +99,7 @@ async def execute_crew(data: InputData):
             "result": result
         }
     except Exception as e:
-        print(f"Error: {str(e)}")  # 데이터 형식 맞추기 위해 추가된 로그
+        print(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

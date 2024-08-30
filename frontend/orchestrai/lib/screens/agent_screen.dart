@@ -29,7 +29,6 @@ class _AgentScreenState extends State<AgentScreen> {
           agent.headAsset = asset;
           int index = int.parse(asset.split('_').last.split('.').first) - 1;
           String agentName = CrewModel.predefinedAgentNames[index];
-          agent.name = agentName;
           var details = CrewModel.predefinedAgentDetails[agentName] ?? {};
           agent.role = details['role'] ?? '';
           agent.goal = details['goal'] ?? '';
@@ -40,9 +39,12 @@ class _AgentScreenState extends State<AgentScreen> {
           int index = int.parse(asset.split('_').last.split('.').first) - 1;
           String taskName = CrewModel.predefinedTaskNames[index];
           var taskDetails = CrewModel.predefinedTaskDetails[taskName] ?? {};
-          agent.task.name = taskName;
-          agent.task.description = taskDetails['description'] ?? '';
-          agent.task.expectedOutput = taskDetails['expectedOutput'] ?? '';
+          agent.task = Task(
+            displayName: CrewModel.customTaskDisplayNames[taskName] ?? taskName,
+            description: taskDetails['description'] ?? '',
+            expectedOutput: taskDetails['expectedOutput'] ?? '',
+            outputFiles: [],
+          );
           break;
       }
     });
@@ -130,7 +132,7 @@ class _AgentScreenState extends State<AgentScreen> {
           Expanded(
             flex: 1,
             child: ParameterSettingsView(
-              key: ValueKey('${agent.name}_${agent.task.name}'),
+              key: ValueKey('${agent.role}_${agent.task?.displayName}'),
               agent: agent,
               selectedPart: selectedCategory,
               onParameterChanged: (role, goal, backstory) {
@@ -145,9 +147,11 @@ class _AgentScreenState extends State<AgentScreen> {
               onTaskParameterChanged:
                   (description, expectedOutput, outputFiles) {
                 setState(() {
-                  agent.task.description = description;
-                  agent.task.expectedOutput = expectedOutput;
-                  agent.task.outputFiles = outputFiles;
+                  if (agent.task != null) {
+                    agent.task!.description = description;
+                    agent.task!.expectedOutput = expectedOutput;
+                    agent.task!.outputFiles = outputFiles;
+                  }
                 });
                 Provider.of<CrewModel>(context, listen: false)
                     .updateAgent(agent, widget.agentIndex);
@@ -326,10 +330,10 @@ class _ParameterSettingsViewState extends State<ParameterSettingsView> {
     _goalController = TextEditingController(text: widget.agent.goal);
     _backstoryController = TextEditingController(text: widget.agent.backstory);
     _taskDescriptionController =
-        TextEditingController(text: widget.agent.task.description);
+        TextEditingController(text: widget.agent.task?.description ?? '');
     _taskExpectedOutputController =
-        TextEditingController(text: widget.agent.task.expectedOutput);
-    _outputFiles = List.from(widget.agent.task.outputFiles);
+        TextEditingController(text: widget.agent.task?.expectedOutput ?? '');
+    _outputFiles = List.from(widget.agent.task?.outputFiles ?? []);
   }
 
   @override
@@ -358,7 +362,7 @@ class _ParameterSettingsViewState extends State<ParameterSettingsView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${widget.agent.name}',
+            Text('${widget.agent.role}',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
             if (widget.selectedPart == '머리') ...[
@@ -382,7 +386,7 @@ class _ParameterSettingsViewState extends State<ParameterSettingsView> {
                     _roleController.text, _goalController.text, value),
               ),
             ] else if (widget.selectedPart == '태스크') ...[
-              Text('태스크 이름: ${widget.agent.task.name}',
+              Text('태스크 이름: ${widget.agent.task?.displayName ?? ''}',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               SizedBox(height: 10),
               TextField(
@@ -392,11 +396,29 @@ class _ParameterSettingsViewState extends State<ParameterSettingsView> {
                 onChanged: (value) => widget.onTaskParameterChanged(
                     value, _taskExpectedOutputController.text, _outputFiles),
               ),
-              TextField(
+              TextFormField(
                 controller: _taskExpectedOutputController,
-                decoration: InputDecoration(labelText: '예상 결과'),
-                onChanged: (value) => widget.onTaskParameterChanged(
-                    _taskDescriptionController.text, value, _outputFiles),
+                decoration: InputDecoration(
+                  labelText: '예상 결과',
+                  errorText: _taskExpectedOutputController.text.isEmpty
+                      ? '예상 결과는 필수입니다'
+                      : null,
+                ),
+                onChanged: (value) {
+                  if (value.isNotEmpty) {
+                    widget.onTaskParameterChanged(
+                      _taskDescriptionController.text,
+                      value,
+                      _outputFiles,
+                    );
+                  }
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '예상 결과는 필수입니다';
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 20),
               Text('출력 파일', style: Theme.of(context).textTheme.titleMedium),
