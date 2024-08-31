@@ -5,7 +5,12 @@ import '../widgets/collaboration_popup.dart';
 import '../widgets/hamburger_view.dart';
 import 'agent_screen.dart';
 
-class CrewScreen extends StatelessWidget {
+class CrewScreen extends StatefulWidget {
+  @override
+  _CrewScreenState createState() => _CrewScreenState();
+}
+
+class _CrewScreenState extends State<CrewScreen> {
   final List<Offset> chairPositions = [
     Offset(0.35, 0.34),
     Offset(0.35, 0.53),
@@ -92,12 +97,13 @@ class CrewScreen extends StatelessWidget {
                           builder: (context) => AgentScreen(agentIndex: index),
                         ),
                       );
-                      (context as Element).markNeedsBuild();
+                      // Force refresh of the screen
+                      setState(() {});
                     },
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        // 의자 이미지 또는 placeholder
+                        // Chair image or placeholder
                         Container(
                           width: 50,
                           height: 50,
@@ -106,7 +112,7 @@ class CrewScreen extends StatelessWidget {
                             shape: BoxShape.circle,
                           ),
                         ),
-                        // + 버튼 또는 에이전트 아이콘
+                        // + button or agent icon
                         Container(
                           width: 40,
                           height: 40,
@@ -148,13 +154,13 @@ class CrewScreen extends StatelessWidget {
                                     right: toolIndex * 15.0,
                                     bottom: 0,
                                     child: Image.asset(
-                                      'assets/tool_${toolIndex + 1}.png',
+                                      'assets/tool_${entry.value}.png',
                                       fit: BoxFit.contain,
                                       height: 25,
                                       errorBuilder:
                                           (context, error, stackTrace) {
                                         print(
-                                            'Error loading tool image: tool_${toolIndex + 1}.png');
+                                            'Error loading tool image: ${entry.value}');
                                         return Icon(Icons.build,
                                             size: 25, color: Colors.red);
                                       },

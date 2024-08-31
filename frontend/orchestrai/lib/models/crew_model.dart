@@ -19,7 +19,12 @@ class CrewModel extends ChangeNotifier {
     'Chief Marketing Strategist',
     'Creative Content Creator',
     'Senior Photographer',
-    'Chief Creative Director'
+    'Chief Creative Director',
+    'Researcher',
+    'Technical Analyst',
+    'Financial Analyst',
+    'Investment Advisor',
+    'Custom Agent',
   ];
 
   static const Map<String, String> customAgentDisplayNames = {
@@ -28,14 +33,24 @@ class CrewModel extends ChangeNotifier {
     'Creative Content Creator': '창의적 콘텐츠 제작자',
     'Senior Photographer': '수석 사진작가',
     'Chief Creative Director': '수석 크리에이티브 디렉터',
+    'Researcher': '연구원',
+    'Technical Analyst': '테크니컬 애널리스트',
+    'Financial Analyst': '파이낸셜 애널리스트',
+    'Investment Advisor': '투자 자문가',
+    'Custom Agent': '사용자 정의 에이전트',
   };
 
   static const Map<String, String> customTaskDisplayNames = {
-    'Market Analysis': '시장 분석',
-    'Strategy Development': '전략 수립',
-    'Content Creation': '콘텐츠 제작',
-    'Photo Shooting': '사진 촬영',
-    'Creative Direction': '크리에이티브 방향 설정',
+    'Product Analysis': '프로덕트 분석',
+    'Competitor Analysis': '경쟁사 분석',
+    'Campaign Development': '캠페인 개발',
+    'Instagram ad Copy': '인스타그램 광고카피',
+    'Photoshooting': '사진찍기',
+    'Research': '리서치',
+    'Technical Analysis': '기술적 분석',
+    'Financial Analysis': '재무 분석',
+    'Investment Advice': '투자 조언',
+    'Custom Task': '사용자 정의 태스크',
   };
 
   static Map<String, Map<String, String>> predefinedAgentDetails = {
@@ -77,12 +92,40 @@ class CrewModel extends ChangeNotifier {
   };
 
   static const List<String> predefinedTaskNames = [
-    'Market Analysis',
-    'Strategy Development',
-    'Content Creation',
-    'Photo Shooting',
-    'Creative Direction'
+    'Product Analysis',
+    'Competitor Analysis',
+    'Campaign Development',
+    'Instagram ad Copy',
+    'Photoshooting',
+    'Research',
+    'Technical Analysis',
+    'Financial Analysis',
+    'Investment Advice',
+    'Custom Task',
   ];
+
+  static const List<String> predefinedToolNames = [
+    'Search Internet',
+    'Search Instagram',
+    'Dall-E Image Generaton',
+    'Stock Price Search',
+    'Stock News Search',
+    'Income Statement Search',
+    'Balance Sheet Search',
+    'Insider Transations Search',
+    'Custom Tool',
+  ];
+    static const Map<String, String> customToolDisplayNames = {
+    'Search Internet': '인터넷 검색',
+    'Search Instagram': '인스타그램 검색',
+    'Dall-E Image Generaton': 'Dall-E 이미지 생성',
+    'Stock Price Search': '주가 검색',
+    'Stock News Search': '주식 뉴스 검색',
+    'Income Statement Search': '손익계산서 검색',
+    'Balance Sheet Search': '대차대조표 검색',
+    'Insider Transations Search': '내부자 거래 검색',
+    'Custom Tool': '사용자 정의 도구',
+  };
 
   static const Map<String, Map<String, String>> predefinedTaskDetails = {
     'Market Analysis': {

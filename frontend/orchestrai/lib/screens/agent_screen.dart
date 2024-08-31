@@ -106,14 +106,6 @@ class _AgentScreenState extends State<AgentScreen> {
                   child: selectedCategory.isNotEmpty
                       ? ComponentSelectionView(
                           part: selectedCategory,
-                          optionCount: selectedCategory == '머리'
-                              ? CrewModel.predefinedAgentNames.length
-                              : (selectedCategory == '태스크'
-                                  ? CrewModel.predefinedTaskNames.length
-                                  : Provider.of<CrewModel>(context,
-                                          listen: false)
-                                      .availableTools
-                                      .length),
                           selectedTools: agent.tools,
                           selectedHead: agent.headAsset,
                           selectedTask: agent.bodyAsset,
