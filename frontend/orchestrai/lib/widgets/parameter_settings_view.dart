@@ -39,10 +39,12 @@ class _ParameterSettingsViewState extends State<ParameterSettingsView> {
     _goalController = TextEditingController(text: widget.agent.goal);
     _backstoryController = TextEditingController(text: widget.agent.backstory);
     _taskDescriptionController =
-        TextEditingController(text: widget.agent.task?.description ?? '');
+        TextEditingController(text: widget.agent.task?['prompt'] ?? '');
     _taskExpectedOutputController =
-        TextEditingController(text: widget.agent.task?.expectedOutput ?? '');
-    _outputFiles = List.from(widget.agent.task?.outputFiles ?? []);
+        TextEditingController(text: widget.agent.task?['expectedOutput'] ?? '');
+    _outputFiles =
+        (widget.agent.task?['outputFiles'] as List<dynamic>?)?.cast<String>() ??
+            [];
   }
 
   @override
@@ -127,7 +129,7 @@ class _ParameterSettingsViewState extends State<ParameterSettingsView> {
                   },
                 ),
               ] else if (widget.selectedPart == '태스크') ...[
-                Text('태스크 이름: ${widget.agent.task?.displayName ?? ''}',
+                Text('태스크 이름: ${widget.agent.task?['displayName'] ?? ''}',
                     style:
                         TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 SizedBox(height: 10),

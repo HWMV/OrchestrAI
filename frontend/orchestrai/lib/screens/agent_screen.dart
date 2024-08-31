@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../Taskbuilder/task_utils..dart';
 import '../models/crew_model.dart';
 import '../widgets/assembled_agent_view.dart';
 import '../widgets/category_selection_view.dart';
@@ -44,14 +45,27 @@ class _AgentScreenState extends State<AgentScreen> {
           agent.bodyAsset = asset;
           int index = int.parse(asset.split('_').last.split('.').first) - 1;
           String taskName = CrewModel.predefinedTaskNames[index];
-          var taskDetails = CrewModel.predefinedTaskDetails[taskName] ?? {};
-          agent.task = Task(
-            displayName: CrewModel.customTaskDisplayNames[taskName] ?? taskName,
-            description: taskDetails['description'] ?? '',
-            expectedOutput: taskDetails['expectedOutput'] ?? '',
-            outputFiles: [],
-          );
-          break;
+          var object = '여행지 추천';
+          switch (taskName) {
+            case "Market Analysis":
+              agent.task = generateMarketAnalysisTask(object);
+              break;
+            case "Strategy Development":
+              agent.task = generateStrategyDevelopmentTask();
+              break;
+            case 'Content Creation':
+              agent.task = generateContentCreationTask(object);
+              break;
+            case 'Photo Shooting':
+              agent.task = generateMarketAnalysisTask(object);
+              break;
+            case 'Creative Direction':
+              agent.task = generateCreativeDirectionTask(object);
+              break;
+            default:
+              agent.task = generateMarketAnalysisTask(object);
+              break;
+          }
         case '도구':
           _toggleTool(asset);
           break;
@@ -109,14 +123,6 @@ class _AgentScreenState extends State<AgentScreen> {
                   child: selectedCategory.isNotEmpty
                       ? ComponentSelectionView(
                           part: selectedCategory,
-                          optionCount: selectedCategory == '머리'
-                              ? CrewModel.predefinedAgentNames.length
-                              : (selectedCategory == '태스크'
-                                  ? CrewModel.predefinedTaskNames.length
-                                  : Provider.of<CrewModel>(context,
-                                          listen: false)
-                                      .availableTools
-                                      .length),
                           selectedTools: agent.tools,
                           selectedHead: agent.headAsset,
                           selectedTask: agent.bodyAsset,
@@ -132,7 +138,7 @@ class _AgentScreenState extends State<AgentScreen> {
           Expanded(
             flex: 1,
             child: ParameterSettingsView(
-              key: ValueKey('${agent.role}_${agent.task?.displayName}'),
+              key: ValueKey('${agent.role}_${agent.task?['displayName']}'),
               agent: agent,
               selectedPart: selectedCategory,
               onParameterChanged: (role, goal, backstory) {
@@ -147,11 +153,9 @@ class _AgentScreenState extends State<AgentScreen> {
               onTaskParameterChanged:
                   (description, expectedOutput, outputFiles) {
                 setState(() {
-                  if (agent.task != null) {
-                    agent.task!.description = description;
-                    agent.task!.expectedOutput = expectedOutput;
-                    agent.task!.outputFiles = outputFiles;
-                  }
+                  agent.task?['prompt'] = description;
+                  agent.task?['expectedOutput'] = expectedOutput;
+                  agent.task?['outputFiles'] = outputFiles.join(',');
                 });
                 Provider.of<CrewModel>(context, listen: false)
                     .updateAgent(agent, widget.agentIndex);

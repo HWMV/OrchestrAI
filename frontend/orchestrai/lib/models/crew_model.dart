@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import '../Taskbuilder/task_utils..dart';
 import '../services/api_service.dart';
 
 class CrewModel extends ChangeNotifier {
@@ -19,7 +20,12 @@ class CrewModel extends ChangeNotifier {
     'Chief Marketing Strategist',
     'Creative Content Creator',
     'Senior Photographer',
-    'Chief Creative Director'
+    'Chief Creative Director',
+    'Researcher',
+    'Technical Analyst',
+    'Financial Analyst',
+    'Investment Advisor',
+    'Custom Agent',
   ];
 
   static const Map<String, String> customAgentDisplayNames = {
@@ -28,14 +34,24 @@ class CrewModel extends ChangeNotifier {
     'Creative Content Creator': '창의적 콘텐츠 제작자',
     'Senior Photographer': '수석 사진작가',
     'Chief Creative Director': '수석 크리에이티브 디렉터',
+    'Researcher': '연구원',
+    'Technical Analyst': '테크니컬 애널리스트',
+    'Financial Analyst': '파이낸셜 애널리스트',
+    'Investment Advisor': '투자 자문가',
+    'Custom Agent': '사용자 정의 에이전트',
   };
 
   static const Map<String, String> customTaskDisplayNames = {
-    'Market Analysis': '시장 분석',
-    'Strategy Development': '전략 수립',
-    'Content Creation': '콘텐츠 제작',
-    'Photo Shooting': '사진 촬영',
-    'Creative Direction': '크리에이티브 방향 설정',
+    'Product Analysis': '프로덕트 분석',
+    'Competitor Analysis': '경쟁사 분석',
+    'Campaign Development': '캠페인 개발',
+    'Instagram ad Copy': '인스타그램 광고카피',
+    'Photoshooting': '사진찍기',
+    'Research': '리서치',
+    'Technical Analysis': '기술적 분석',
+    'Financial Analysis': '재무 분석',
+    'Investment Advice': '투자 조언',
+    'Custom Task': '사용자 정의 태스크',
   };
 
   static Map<String, Map<String, String>> predefinedAgentDetails = {
@@ -77,17 +93,45 @@ class CrewModel extends ChangeNotifier {
   };
 
   static const List<String> predefinedTaskNames = [
-    'Market Analysis',
-    'Strategy Development',
-    'Content Creation',
-    'Photo Shooting',
-    'Creative Direction'
+    'Product Analysis',
+    'Competitor Analysis',
+    'Campaign Development',
+    'Instagram ad Copy',
+    'Photoshooting',
+    'Research',
+    'Technical Analysis',
+    'Financial Analysis',
+    'Investment Advice',
+    'Custom Task',
   ];
+
+  static const List<String> predefinedToolNames = [
+    'Search Internet',
+    'Search Instagram',
+    'Dall-E Image Generaton',
+    'Stock Price Search',
+    'Stock News Search',
+    'Income Statement Search',
+    'Balance Sheet Search',
+    'Insider Transations Search',
+    'Custom Tool',
+  ];
+    static const Map<String, String> customToolDisplayNames = {
+    'Search Internet': '인터넷 검색',
+    'Search Instagram': '인스타그램 검색',
+    'Dall-E Image Generaton': 'Dall-E 이미지 생성',
+    'Stock Price Search': '주가 검색',
+    'Stock News Search': '주식 뉴스 검색',
+    'Income Statement Search': '손익계산서 검색',
+    'Balance Sheet Search': '대차대조표 검색',
+    'Insider Transations Search': '내부자 거래 검색',
+    'Custom Tool': '사용자 정의 도구',
+  };
 
   static const Map<String, Map<String, String>> predefinedTaskDetails = {
     'Market Analysis': {
       'description':
-          'Analyze the current market trends and competitor strategies.',
+          'Analyze the current market trends and competitor rategies.',
       'expectedOutput': 'Comprehensive market analysis report',
     },
     'Strategy Development': {
@@ -124,26 +168,18 @@ class CrewModel extends ChangeNotifier {
 
     String agentRole = predefinedAgentNames[index];
     Map<String, String> agentDetails = predefinedAgentDetails[agentRole] ?? {};
-    String taskName = predefinedTaskNames[index];
-    Map<String, String> taskDetails = predefinedTaskDetails[taskName] ?? {};
 
     agents[index] = AgentModel(
       displayName: customAgentDisplayNames[agentRole] ?? agentRole,
       role: agentDetails['role'] ?? '',
       goal: agentDetails['goal'] ?? '',
       backstory: agentDetails['backstory'] ?? '',
-      task: Task(
-        displayName: customTaskDisplayNames[taskName] ?? taskName,
-        description: taskDetails['description'] ?? '',
-        expectedOutput: taskDetails['expectedOutput'] ??
-            'Default expected output for $taskName',
-        outputFiles: [],
-      ),
       tools: [],
       headAsset: '${index + 1}',
       bodyAsset: '${index + 1}',
       toolAsset: 'default',
     );
+    assignTaskToAgent(agentRole);
     notifyListeners();
   }
 
@@ -175,11 +211,31 @@ class CrewModel extends ChangeNotifier {
     }
   }
 
-  void assignTaskToAgent(String agentRole, Task task) {
+  void assignTaskToAgent(String agentRole) {
     final agent =
         agents.firstWhere((a) => a?.role == agentRole, orElse: () => null);
     if (agent != null) {
-      agent.task = task;
+      var object = 'apple';
+      switch (agentRole) {
+        case 'Lead Market Analyst':
+          agent.task = generateMarketAnalysisTask(object);
+          break;
+        case 'Chief Marketing Strategist':
+          agent.task = generateStrategyDevelopmentTask();
+          break;
+        case 'Creative Content Creator':
+          agent.task = generateContentCreationTask(object);
+          break;
+        case 'Senior Photographer':
+          agent.task = generateMarketAnalysisTask(object);
+          break;
+        case 'Chief Creative Director':
+          agent.task = generateCreativeDirectionTask(object);
+          break;
+        default:
+          agent.task = generateMarketAnalysisTask(object);
+          break;
+      }
       notifyListeners();
     }
   }
@@ -197,15 +253,15 @@ class CrewModel extends ChangeNotifier {
                     'tools': agent.tools
                         .map((tool) => {'name': tool['name']})
                         .toList(),
-                    'task_description': agent.task?.description,
+                    'task_description': agent.task?['description'],
                   })
               .toList(),
           'tasks': [
-            for (var agent in agents.where((a) => a != null && a.task != null))
+            for (var agent in agents.where((a) => a != null))
               {
-                'description': agent!.task!.description,
+                'description': agent!.task?['prompt'],
                 'target_agent': agent.role,
-                'expected_output': agent.task!.expectedOutput,
+                'expected_output': agent.task?['expectedOutput'],
               }
           ],
         }
@@ -227,7 +283,7 @@ class AgentModel {
   String role;
   String goal;
   String backstory;
-  Task? task; // Task를 선택적으로 만듭니다
+  Map<String, String>? task;
   // List<String> tools;
   List<Map<String, String>> tools;
   String headAsset;
@@ -247,20 +303,20 @@ class AgentModel {
   });
 }
 
-class Task {
-  String displayName;
-  String description;
-  String expectedOutput;
-  List<String> outputFiles;
+// class Task {
+//   String displayName;
+//   String description;
+//   String expectedOutput;
+//   List<String> outputFiles;
 
-  Task({
-    required this.displayName,
-    required this.description,
-    required this.expectedOutput,
-    required this.outputFiles,
-  }) {
-    if (this.expectedOutput.isEmpty) {
-      this.expectedOutput = "Task output";
-    }
-  }
-}
+//   Task({
+//     required this.displayName,
+//     required this.description,
+//     required this.expectedOutput,
+//     required this.outputFiles,
+//   }) {
+//     if (this.expectedOutput.isEmpty) {
+//       this.expectedOutput = "Task output";
+//     }
+//   }
+// }

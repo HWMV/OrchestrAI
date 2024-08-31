@@ -27,29 +27,48 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 if not openai_api_key:
     raise ValueError("OPENAI_API_KEY가 설정되지 않았습니다.")
 
+# Pydantic 모델 정의
 class Tool(BaseModel):
     name: str
-    description: str
+    prompt: str
 
-# tools 사용을 위해 AgentModel 수정 240830
 class AgentModel(BaseModel):
     role: str
     goal: str
     backstory: str
-    tools: List[str]  # 도구 이름 목록으로 변경
-    task_description: Optional[str] = None
+    tools: List[Tool]
+    # task_description: str
 
 class TaskModel(BaseModel):
     description: str
     target_agent: str
     expected_output: str
 
+# "crew_resources": {
+#     "agents": [
+#         {
+#           "role": "string",
+#           "goal": "string",
+#           "backstory": "string",
+#           "tools": [
+#             {
+#               "name": "string",
+#               "description": "string"
+#             }
+#           ],
+#           "task_description": "string"
+#         }
+
 class CrewResources(BaseModel):
-    agents: Dict[str, List[AgentModel]]
-    tasks: Dict[str, TaskModel]
+    agents: List[AgentModel]
+    tasks: List[TaskModel]
 
 class InputData(BaseModel):
     crew_resources: CrewResources
+
+class InputData_v2(BaseModel):
+    agents : None
+    tasks : None
 
 # 사용 가능한 도구 목록을 반환하는 엔드포인트 추가
 @app.get("/available_tools")

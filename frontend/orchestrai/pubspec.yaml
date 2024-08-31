@@ -74,13 +74,19 @@ flutter:
     - assets/agent_3.png
     - assets/agent_4.png
     - assets/agent_default.png
-    - assets/head_5.png
+    - assets/head_default.png
     - assets/body_default.png
     - assets/tool_default.png
     - assets/head_1.png
     - assets/head_2.png
     - assets/head_3.png
     - assets/head_4.png
+    - assets/head_5.png
+    - assets/head_6.png
+    - assets/head_7.png
+    - assets/head_8.png
+    - assets/head_9.png
+    - assets/head_10.png
     - assets/body_1.png
     - assets/body_2.png
     - assets/body_3.png
@@ -89,6 +95,8 @@ flutter:
     - assets/body_6.png
     - assets/body_7.png
     - assets/body_8.png
+    - assets/body_9.png
+    - assets/body_10.png
     - assets/tool_1.png
     - assets/tool_2.png
     - assets/tool_3.png
@@ -97,6 +105,7 @@ flutter:
     - assets/tool_6.png
     - assets/tool_7.png
     - assets/tool_8.png
+    - assets/tool_9.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
