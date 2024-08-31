@@ -20,6 +20,16 @@ class CrewScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('OrchestrAI'),
         centerTitle: true,
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
+        ),
         actions: [
           TextButton(
             child: Text('로그인', style: TextStyle(color: Colors.black)),
@@ -35,6 +45,7 @@ class CrewScreen extends StatelessWidget {
           ),
         ],
       ),
+      drawer: HamburgerView(),
       body: Consumer<CrewModel>(
         builder: (context, crewModel, child) {
           return Stack(
@@ -315,4 +326,4 @@ class AgentListItem extends StatelessWidget {
     );
   }
 }
-}
+
