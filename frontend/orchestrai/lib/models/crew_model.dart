@@ -106,8 +106,8 @@ class CrewModel extends ChangeNotifier {
   ];
 
   static const List<String> predefinedToolNames = [
-    'Search Internet',
-    'Search Instagram',
+    'Search internet',
+    'Search instagram',
     'Dall-E Image Generaton',
     'Stock Price Search',
     'Stock News Search',
@@ -116,9 +116,9 @@ class CrewModel extends ChangeNotifier {
     'Insider Transations Search',
     'Custom Tool',
   ];
-    static const Map<String, String> customToolDisplayNames = {
-    'Search Internet': '인터넷 검색',
-    'Search Instagram': '인스타그램 검색',
+  static const Map<String, String> customToolDisplayNames = {
+    'Search internet': '인터넷 검색',
+    'Search instagram': '인스타그램 검색',
     'Dall-E Image Generaton': 'Dall-E 이미지 생성',
     'Stock Price Search': '주가 검색',
     'Stock News Search': '주식 뉴스 검색',

@@ -30,7 +30,7 @@ if not openai_api_key:
 # Pydantic 모델 정의
 class Tool(BaseModel):
     name: str
-    prompt: str
+    # prompt: str
 
 class AgentModel(BaseModel):
     role: str
@@ -87,7 +87,8 @@ async def execute_crew(data: InputData):
         agents = []
         for agent_data in data.crew_resources.agents['agent_list']:
             print(f"Processing agent: {agent_data}")
-            agent_tools = [getattr(SearchTools, tool_name) for tool_name in agent_data.tools if hasattr(SearchTools, tool_name)]
+            agent_tools = [getattr(SearchTools, tool.name.lower().replace(" ", "_")) for tool in agent_data.tools if hasattr(SearchTools, tool.name.lower().replace(" ", "_"))]
+
             agent = Agent(
                 role=agent_data.role,
                 goal=agent_data.goal,
@@ -100,7 +101,8 @@ async def execute_crew(data: InputData):
         for task_description, task_data in data.crew_resources.tasks.items():
             task = Task(
                 description=task_data.description,
-                agent=next((agent for agent in agents if agent.role == task_data.target_agent), None)
+                agent=next((agent for agent in agents if agent.role == task_data.target_agent), None),
+                expected_output=task_data.expected_output
             )
             if task.agent is None:
                 raise ValueError(f"No matching agent found for task: {task_description}")

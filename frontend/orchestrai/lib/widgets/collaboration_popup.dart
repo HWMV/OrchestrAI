@@ -100,7 +100,18 @@ class _CollaborationPopupState extends State<CollaborationPopup> {
                 ),
                 onPressed: () {
                   // TODO: Implement collaboration execution
-                  Navigator.of(context).pop();
+                  final crewModel =
+                      Provider.of<CrewModel>(context, listen: false);
+                  crewModel.executeCrew().then((result) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('협업 실행 결과: $result')),
+                    );
+                    Navigator.of(context).pop();
+                  }).catchError((error) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('오류 발생: $error')),
+                    );
+                  });
                 },
               ),
             ),

@@ -81,7 +81,6 @@ class _AgentScreenState extends State<AgentScreen> {
         agent.tools.removeWhere((tool) => tool['name'] == toolName);
       } else {
         if (agent.tools.length < 4) {
-          // 최대 4개의 도구만 선택 가능하도록 제한
           agent.tools.add({'name': toolName});
         }
       }

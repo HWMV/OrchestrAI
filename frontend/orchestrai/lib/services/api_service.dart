@@ -2,7 +2,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiService {
-  final String baseUrl = 'http://13.209.41.78:8000'; // 백엔드 서버 주소
+  final String baseUrl = 'http://localhost:8000'; // 백엔드 서버 주소
+  // 'http://13.209.41.78:8000'; // 백엔드 서버 주소
 
   // 사용 가능한 도구 목록을 반환하는 엔드포인트
   Future<List<Map<String, String>>> getAvailableTools() async {
