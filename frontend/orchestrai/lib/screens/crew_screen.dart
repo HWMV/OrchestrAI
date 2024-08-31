@@ -7,11 +7,10 @@ import 'agent_screen.dart';
 
 class CrewScreen extends StatelessWidget {
   final List<Offset> chairPositions = [
-    Offset(0.5, 0.2), // 상단 중앙
-    Offset(0.25, 0.4), // 왼쪽 상단
-    Offset(0.75, 0.4), // 오른쪽 상단
-    Offset(0.35, 0.6), // 왼쪽 하단
-    Offset(0.65, 0.6), // 오른쪽 하단
+    Offset(0.35, 0.34),
+    Offset(0.35, 0.53),
+    Offset(0.62, 0.34),
+    Offset(0.62, 0.53),
   ];
 
   @override
@@ -58,9 +57,8 @@ class CrewScreen extends StatelessWidget {
               ),
               if (crewModel.teamName != null)
                 Positioned(
-                  top:
-                      MediaQuery.of(context).size.height * 0.35, // 책상 위치에 맞게 조정
-                  left: MediaQuery.of(context).size.width * 0.5 - 100, // 중앙 정렬
+                  top: MediaQuery.of(context).size.height * 0.35,
+                  left: MediaQuery.of(context).size.width * 0.5 - 100,
                   child: Container(
                     width: 200,
                     height: 50,
@@ -79,14 +77,10 @@ class CrewScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-              ...List.generate(5, (index) {
+              ...List.generate(4, (index) {
                 return Positioned(
-                  left: MediaQuery.of(context).size.width *
-                          chairPositions[index].dx -
-                      70,
-                  top: MediaQuery.of(context).size.height *
-                          chairPositions[index].dy -
-                      70,
+                  left: MediaQuery.of(context).size.width * chairPositions[index].dx,
+                  top: MediaQuery.of(context).size.height * chairPositions[index].dy,
                   child: GestureDetector(
                     onTap: () async {
                       if (crewModel.agents[index] == null) {
@@ -98,64 +92,79 @@ class CrewScreen extends StatelessWidget {
                           builder: (context) => AgentScreen(agentIndex: index),
                         ),
                       );
-                      // 화면 갱신을 위해 setState 호출
                       (context as Element).markNeedsBuild();
                     },
-                    child: SizedBox(
-                      width: 140,
-                      height: 140,
-                      child: Stack(
-                        children: [
-                          Image.asset('assets/chair.png',
-                              width: 140, height: 140),
-                          if (crewModel.agents[index] != null)
-                            Positioned(
-                              bottom: 40,
-                              left: 20,
-                              right: 20,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Image.asset(
-                                    'assets/body_${crewModel.agents[index]!.bodyAsset}.png',
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // 의자 이미지 또는 placeholder
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        // + 버튼 또는 에이전트 아이콘
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withOpacity(0.7),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            crewModel.agents[index] == null ? Icons.add : Icons.edit,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        if (crewModel.agents[index] != null)
+                          Positioned(
+                            bottom: 50,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Image.asset(
+                                  'assets/body_${crewModel.agents[index]!.bodyAsset}.png',
+                                  fit: BoxFit.contain,
+                                  height: 80,
+                                ),
+                                Positioned(
+                                  top: -10,
+                                  child: Image.asset(
+                                    'assets/head_${crewModel.agents[index]!.headAsset}.png',
                                     fit: BoxFit.contain,
-                                    height: 90,
+                                    height: 40,
                                   ),
-                                  Positioned(
-                                    top: -8,
+                                ),
+                                ...crewModel.agents[index]!.tools
+                                    .asMap()
+                                    .entries
+                                    .map((entry) {
+                                  int toolIndex = entry.key;
+                                  return Positioned(
+                                    right: toolIndex * 15.0,
+                                    bottom: 0,
                                     child: Image.asset(
-                                      'assets/head_${crewModel.agents[index]!.headAsset}.png',
+                                      'assets/tool_${toolIndex + 1}.png',
                                       fit: BoxFit.contain,
-                                      height: 45,
+                                      height: 25,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        print(
+                                            'Error loading tool image: tool_${toolIndex + 1}.png');
+                                        return Icon(Icons.build,
+                                            size: 25, color: Colors.red);
+                                      },
                                     ),
-                                  ),
-                                  ...crewModel.agents[index]!.tools
-                                      .asMap()
-                                      .entries
-                                      .map((entry) {
-                                    int toolIndex = entry.key;
-                                    return Positioned(
-                                      right: toolIndex * 20.0,
-                                      bottom: 0,
-                                      child: Image.asset(
-                                        'assets/tool_${toolIndex + 1}.png',
-                                        fit: BoxFit.contain,
-                                        height: 30,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                          print(
-                                              'Error loading tool image: tool_${toolIndex + 1}.png');
-                                          return Icon(Icons.build,
-                                              size: 30, color: Colors.red);
-                                        },
-                                      ),
-                                    );
-                                  }).toList(),
-                                ],
-                              ),
+                                  );
+                                }).toList(),
+                              ],
                             ),
-                        ],
-                      ),
+                          ),
+                      ],
                     ),
                   ),
                 );
@@ -170,7 +179,7 @@ class CrewScreen extends StatelessWidget {
               crewModel.agents.whereType<AgentModel>().toList();
 
           if (activeAgents.isEmpty) {
-            return SizedBox.shrink(); // 에이전트가 없으면 버튼을 표시하지 않음
+            return SizedBox.shrink();
           }
 
           return Container(
@@ -210,6 +219,4 @@ class CrewScreen extends StatelessWidget {
       ),
     );
   }
-
 }
-
