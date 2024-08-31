@@ -7,7 +7,7 @@ import 'screens/ai_team_popup.dart';
 void main() {
   runApp(
     ChangeNotifierProvider(
-      create: (context) => CrewModel()..addDummyData(),
+      create: (context) => CrewModel(), //..addDummyData(),
       child: OrchestrAIApp(),
     ),
   );
