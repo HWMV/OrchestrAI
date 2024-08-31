@@ -8,6 +8,8 @@ class CrewModel extends ChangeNotifier {
   late ApiService apiService;
   List<Map<String, String>> availableTools = [];
 
+  String? teamName;
+
   CrewModel() {
     apiService = ApiService();
     loadAvailableTools();
@@ -116,6 +118,65 @@ class CrewModel extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       print('사용 가능한 도구 로딩 중 오류 발생: $e');
+    }
+  }
+
+  };
+  void addDefaultAgent(int index) {
+    if (index < 0 || index >= agents.length) return;
+
+    String agentRole = predefinedAgentNames[index];
+    Map<String, String> agentDetails = predefinedAgentDetails[agentRole] ?? {};
+    String taskName = predefinedTaskNames[index];
+    Map<String, String> taskDetails = predefinedTaskDetails[taskName] ?? {};
+
+    agents[index] = AgentModel(
+      displayName:
+          customAgentDisplayNames[agentRole] ?? agentRole, // 사용자 정의 이름 사용
+      role: agentDetails['role'] ?? '',
+      goal: agentDetails['goal'] ?? '',
+      backstory: agentDetails['backstory'] ?? '',
+      task: Task(
+        displayName:
+            customTaskDisplayNames[taskName] ?? taskName, // 사용자 정의 이름 사용
+        description: taskDetails['description'] ?? '',
+        expectedOutput: taskDetails['expectedOutput'] ??
+            'Default expected output for $taskName',
+        outputFiles: [],
+      ),
+      tools: [],
+      headAsset: '${index + 1}',
+      bodyAsset: '${index + 1}',
+      toolAsset: 'default',
+    );
+    notifyListeners();
+  }
+
+  void updateAgent(AgentModel updatedAgent, int index) {
+    if (index < 0 || index >= agents.length) return;
+    agents[index] = updatedAgent;
+    notifyListeners();
+  }
+  void setTeamName(String name) {
+    teamName = name;
+    notifyListeners();
+  }
+
+  String _getAssetName(String agentName) {
+    // 기존 에셋 매핑 로직을 유지
+    switch (agentName) {
+      case 'Lead Market Analyst':
+        return 'market_analyst';
+      case 'Chief Marketing Strategist':
+        return 'marketing_strategist';
+      case 'Creative Content Creator':
+        return 'content_creator';
+      case 'Senior Photographer':
+        return 'photographer';
+      case 'Chief Creative Director':
+        return 'creative_director';
+      default:
+        return 'default';
     }
   }
 

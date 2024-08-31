@@ -15,7 +15,24 @@ class CrewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('OrchestrAI')),
+      appBar: AppBar(
+        title: Text('OrchestrAI'),
+        centerTitle: true,
+        actions: [
+          TextButton(
+            child: Text('로그인', style: TextStyle(color: Colors.black)),
+            onPressed: () {
+              // TODO: Implement login functionality
+            },
+          ),
+          TextButton(
+            child: Text('회원가입', style: TextStyle(color: Colors.black)),
+            onPressed: () {
+              // TODO: Implement signup functionality
+            },
+          ),
+        ],
+      ),
       body: Consumer<CrewModel>(
         builder: (context, crewModel, child) {
           return Stack(
@@ -26,6 +43,26 @@ class CrewScreen extends StatelessWidget {
                 width: double.infinity,
                 height: double.infinity,
               ),
+
+              if (crewModel.teamName != null)
+                Positioned(
+                  top: MediaQuery.of(context).size.height * 0.35, // 책상 위치에 맞게 조정
+                  left: MediaQuery.of(context).size.width * 0.5 - 100, // 중앙 정렬
+                  child: Container(
+                    width: 200,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF6050DC),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: Text(
+                        crewModel.teamName!,
+                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ),
               ...List.generate(5, (index) {
                 return Positioned(
                   left: MediaQuery.of(context).size.width *
@@ -113,6 +150,13 @@ class CrewScreen extends StatelessWidget {
       ),
       bottomNavigationBar: Consumer<CrewModel>(
         builder: (context, crewModel, child) {
+          List<AgentModel> activeAgents =
+              crewModel.agents.whereType<AgentModel>().toList();
+          
+          if (activeAgents.isEmpty) {
+            return SizedBox.shrink(); // 에이전트가 없으면 버튼을 표시하지 않음
+          }
+
           return Container(
             padding: EdgeInsets.all(16),
             child: ElevatedButton(
