@@ -91,7 +91,8 @@ class CrewModel extends ChangeNotifier {
       'expectedOutput': 'Comprehensive market analysis report',
     },
     'Strategy Development': {
-      'description': 'Develop marketing strategies based on market analysis.',
+      'description':
+          'Develop a marketing strategy based on the market analysis.',
       'expectedOutput': 'Detailed marketing strategy document',
     },
     'Content Creation': {
@@ -114,7 +115,7 @@ class CrewModel extends ChangeNotifier {
       availableTools = await apiService.getAvailableTools();
       notifyListeners();
     } catch (e) {
-      print('사용 가능한 도구 로딩 중 오류 발생: $e');
+      print('Error loading available tools: $e');
     }
   }
 
@@ -157,6 +158,32 @@ class CrewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  String _getAssetName(String agentName) {
+    switch (agentName) {
+      case 'Lead Market Analyst':
+        return 'market_analyst';
+      case 'Chief Marketing Strategist':
+        return 'marketing_strategist';
+      case 'Creative Content Creator':
+        return 'content_creator';
+      case 'Senior Photographer':
+        return 'photographer';
+      case 'Chief Creative Director':
+        return 'creative_director';
+      default:
+        return 'default';
+    }
+  }
+
+  void assignTaskToAgent(String agentRole, Task task) {
+    final agent =
+        agents.firstWhere((a) => a?.role == agentRole, orElse: () => null);
+    if (agent != null) {
+      agent.task = task;
+      notifyListeners();
+    }
+  }
+
   Future<String> executeCrew() async {
     try {
       final crewData = {
@@ -196,8 +223,8 @@ class CrewModel extends ChangeNotifier {
 }
 
 class AgentModel {
-  String displayName; // 사용자에게 보여지는 이름
-  String role; // 백엔드와 통신할 때 사용되는 식별자
+  String displayName;
+  String role;
   String goal;
   String backstory;
   Task? task; // Task를 선택적으로 만듭니다
@@ -221,8 +248,8 @@ class AgentModel {
 }
 
 class Task {
-  String displayName; // 사용자에게 보여지는 이름
-  String description; // 백엔드와 통신할 때 사용되는 식별자
+  String displayName;
+  String description;
   String expectedOutput;
   List<String> outputFiles;
 
@@ -232,7 +259,6 @@ class Task {
     required this.expectedOutput,
     required this.outputFiles,
   }) {
-    // expectedOutput이 비어있으면 기본값 설정
     if (this.expectedOutput.isEmpty) {
       this.expectedOutput = "Task output";
     }
