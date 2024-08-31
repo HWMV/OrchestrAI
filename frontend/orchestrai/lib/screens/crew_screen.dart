@@ -4,6 +4,7 @@ import '../models/crew_model.dart';
 import '../widgets/collaboration_popup.dart';
 import '../widgets/hamburger_view.dart';
 import 'agent_screen.dart';
+import '../widgets/assembled_agent_view.dart';
 
 class CrewScreen extends StatefulWidget {
   @override
@@ -97,13 +98,11 @@ class _CrewScreenState extends State<CrewScreen> {
                           builder: (context) => AgentScreen(agentIndex: index),
                         ),
                       );
-                      // Force refresh of the screen
                       setState(() {});
                     },
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        // Chair image or placeholder
                         Container(
                           width: 50,
                           height: 50,
@@ -112,63 +111,25 @@ class _CrewScreenState extends State<CrewScreen> {
                             shape: BoxShape.circle,
                           ),
                         ),
-                        // + button or agent icon
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.7),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            crewModel.agents[index] == null ? Icons.add : Icons.edit,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                        if (crewModel.agents[index] != null)
-                          Positioned(
-                            bottom: 50,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Image.asset(
-                                  'assets/body_${crewModel.agents[index]!.bodyAsset}.png',
-                                  fit: BoxFit.contain,
-                                  height: 80,
-                                ),
-                                Positioned(
-                                  top: -10,
-                                  child: Image.asset(
-                                    'assets/head_${crewModel.agents[index]!.headAsset}.png',
-                                    fit: BoxFit.contain,
-                                    height: 40,
-                                  ),
-                                ),
-                                ...crewModel.agents[index]!.tools
-                                    .asMap()
-                                    .entries
-                                    .map((entry) {
-                                  int toolIndex = entry.key;
-                                  return Positioned(
-                                    right: toolIndex * 15.0,
-                                    bottom: 0,
-                                    child: Image.asset(
-                                      'assets/tool_${entry.value}.png',
-                                      fit: BoxFit.contain,
-                                      height: 25,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        print(
-                                            'Error loading tool image: ${entry.value}');
-                                        return Icon(Icons.build,
-                                            size: 25, color: Colors.red);
-                                      },
-                                    ),
-                                  );
-                                }).toList(),
-                              ],
+                        if (crewModel.agents[index] == null)
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.7),
+                              shape: BoxShape.circle,
                             ),
+                            child: Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          )
+                        else
+                          SizedBox(
+                            width: 120,
+                            height: 200,
+                            child: AssembledAgentView(agent: crewModel.agents[index]!),
                           ),
                       ],
                     ),
