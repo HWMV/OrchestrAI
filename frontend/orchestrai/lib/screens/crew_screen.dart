@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/crew_model.dart';
+<<<<<<< Updated upstream
+=======
+import '../widgets/collaboration_popup.dart';
+import '../widgets/hamburger_view.dart';
+>>>>>>> Stashed changes
 import 'agent_screen.dart';
 
 class CrewScreen extends StatelessWidget {
@@ -18,6 +23,16 @@ class CrewScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('OrchestrAI'),
         centerTitle: true,
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
+        ),
         actions: [
           TextButton(
             child: Text('로그인', style: TextStyle(color: Colors.black)),
@@ -33,6 +48,7 @@ class CrewScreen extends StatelessWidget {
           ),
         ],
       ),
+      drawer: HamburgerView(),
       body: Consumer<CrewModel>(
         builder: (context, crewModel, child) {
           return Stack(
@@ -194,6 +210,7 @@ class CrewScreen extends StatelessWidget {
       ),
     );
   }
+<<<<<<< Updated upstream
 }
 
 class CollaborationPopup extends StatefulWidget {
@@ -308,3 +325,6 @@ class AgentListItem extends StatelessWidget {
     );
   }
 }
+=======
+}
+>>>>>>> Stashed changes
