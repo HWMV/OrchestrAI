@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/crew_model.dart';
+import '../widgets/assembled_agent_view.dart';
+import '../widgets/category_selection_view.dart';
+import '../widgets/component_selection_view.dart';
+import '../widgets/parameter_settings_view.dart';
 
 class AgentScreen extends StatefulWidget {
   final int agentIndex;
@@ -28,11 +32,13 @@ class _AgentScreenState extends State<AgentScreen> {
         case '머리':
           agent.headAsset = asset;
           int index = int.parse(asset.split('_').last.split('.').first) - 1;
-          String agentName = CrewModel.predefinedAgentNames[index];
-          var details = CrewModel.predefinedAgentDetails[agentName] ?? {};
-          agent.role = details['role'] ?? '';
+          String agentRole = CrewModel.predefinedAgentNames[index];
+          var details = CrewModel.predefinedAgentDetails[agentRole] ?? {};
+          agent.role = agentRole;
           agent.goal = details['goal'] ?? '';
           agent.backstory = details['backstory'] ?? '';
+          agent.displayName =
+              CrewModel.customAgentDisplayNames[agentRole] ?? agentRole;
           break;
         case '태스크':
           agent.bodyAsset = asset;
@@ -45,6 +51,9 @@ class _AgentScreenState extends State<AgentScreen> {
             expectedOutput: taskDetails['expectedOutput'] ?? '',
             outputFiles: [],
           );
+          break;
+        case '도구':
+          _toggleTool(asset);
           break;
       }
     });
@@ -109,19 +118,7 @@ class _AgentScreenState extends State<AgentScreen> {
                           selectedHead: agent.headAsset,
                           selectedTask: agent.bodyAsset,
                           onAssetChanged: (asset) {
-                            setState(() {
-                              switch (selectedCategory) {
-                                case '머리':
-                                  _updateAgentAsset(asset, '머리');
-                                  break;
-                                case '태스크':
-                                  _updateAgentAsset(asset, '태스크');
-                                  break;
-                                case '도구':
-                                  _toggleTool(asset);
-                                  break;
-                              }
-                            });
+                            _updateAgentAsset(asset, selectedCategory);
                           },
                         )
                       : Center(child: Text('카테고리를 선택해주세요')),
@@ -164,344 +161,8 @@ class _AgentScreenState extends State<AgentScreen> {
   }
 
   void _completeAgentCreation() {
-    // 에이전트 생성 완료 로직
     Provider.of<CrewModel>(context, listen: false)
         .updateAgent(agent, widget.agentIndex);
-    Navigator.pop(context); // crew_screen으로 돌아가기
-  }
-}
-
-class AssembledAgentView extends StatelessWidget {
-  final AgentModel agent;
-
-  AssembledAgentView({required this.agent});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Image.asset('assets/head_${agent.headAsset.split('_').last}',
-            height: 100),
-        Image.asset('assets/body_${agent.bodyAsset.split('_').last}',
-            height: 150),
-        SizedBox(height: 20),
-        Text('선택된 도구:',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        SizedBox(height: 10),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: agent.tools
-              .map((tool) => Chip(
-                    label: Text(tool),
-                    backgroundColor: Colors.blue[100],
-                  ))
-              .toList(),
-        ),
-      ],
-    );
-  }
-}
-
-class CategorySelectionView extends StatelessWidget {
-  final Function(String) onCategorySelected;
-
-  CategorySelectionView({required this.onCategorySelected});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: ['머리', '태스크', '도구'].map((category) {
-        return ElevatedButton(
-          child: Text(category),
-          onPressed: () => onCategorySelected(category),
-        );
-      }).toList(),
-    );
-  }
-}
-
-class ComponentSelectionView extends StatelessWidget {
-  final String part;
-  final int optionCount;
-  final List<String> selectedTools;
-  final String selectedHead;
-  final String selectedTask;
-  final Function(String) onAssetChanged;
-
-  ComponentSelectionView({
-    required this.part,
-    required this.optionCount,
-    required this.selectedTools,
-    required this.selectedHead,
-    required this.selectedTask,
-    required this.onAssetChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (part == '머리' || part == '태스크') {
-      return GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          childAspectRatio: 1,
-        ),
-        itemCount: optionCount,
-        itemBuilder: (context, index) {
-          String asset = '${part == '머리' ? 'head' : 'body'}_${index + 1}.png';
-          bool isSelected =
-              part == '머리' ? asset == selectedHead : asset == selectedTask;
-          return GestureDetector(
-            onTap: () => onAssetChanged(asset),
-            child: Container(
-              margin: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: isSelected ? Colors.blue : Colors.grey,
-                  width: 2,
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Image.asset('assets/$asset'),
-            ),
-          );
-        },
-      );
-    } else if (part == '도구') {
-      return Consumer<CrewModel>(
-        builder: (context, crewModel, child) {
-          return ListView.builder(
-            itemCount: crewModel.availableTools.length,
-            itemBuilder: (context, index) {
-              String toolName = crewModel.availableTools[index]['name']!;
-              bool isSelected = selectedTools.contains(toolName);
-              return ListTile(
-                title: Text(toolName),
-                trailing: isSelected
-                    ? Icon(Icons.check_box, color: Colors.blue)
-                    : Icon(Icons.check_box_outline_blank),
-                onTap: () => onAssetChanged(toolName),
-              );
-            },
-          );
-        },
-      );
-    }
-    return Container();
-  }
-}
-
-class ParameterSettingsView extends StatefulWidget {
-  final AgentModel agent;
-  final String selectedPart;
-  final Function(String, String, String) onParameterChanged;
-  final Function(String, String, List<String>) onTaskParameterChanged;
-
-  ParameterSettingsView({
-    Key? key,
-    required this.agent,
-    required this.selectedPart,
-    required this.onParameterChanged,
-    required this.onTaskParameterChanged,
-  }) : super(key: key);
-
-  @override
-  _ParameterSettingsViewState createState() => _ParameterSettingsViewState();
-}
-
-class _ParameterSettingsViewState extends State<ParameterSettingsView> {
-  final _formKey = GlobalKey<FormState>();
-  late TextEditingController _roleController;
-  late TextEditingController _goalController;
-  late TextEditingController _backstoryController;
-  late TextEditingController _taskDescriptionController;
-  late TextEditingController _taskExpectedOutputController;
-  List<String> _outputFiles = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeControllers();
-  }
-
-  void _initializeControllers() {
-    _roleController = TextEditingController(text: widget.agent.role);
-    _goalController = TextEditingController(text: widget.agent.goal);
-    _backstoryController = TextEditingController(text: widget.agent.backstory);
-    _taskDescriptionController =
-        TextEditingController(text: widget.agent.task?.description ?? '');
-    _taskExpectedOutputController =
-        TextEditingController(text: widget.agent.task?.expectedOutput ?? '');
-    _outputFiles = List.from(widget.agent.task?.outputFiles ?? []);
-  }
-
-  @override
-  void didUpdateWidget(ParameterSettingsView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.agent != widget.agent) {
-      _initializeControllers();
-    }
-  }
-
-  @override
-  void dispose() {
-    _roleController.dispose();
-    _goalController.dispose();
-    _backstoryController.dispose();
-    _taskDescriptionController.dispose();
-    _taskExpectedOutputController.dispose();
-    super.dispose();
-  }
-
-  void _saveForm() {
-    if (_formKey.currentState!.validate()) {
-      if (widget.selectedPart == '머리') {
-        widget.onParameterChanged(
-          _roleController.text,
-          _goalController.text,
-          _backstoryController.text,
-        );
-      } else if (widget.selectedPart == '태스크') {
-        widget.onTaskParameterChanged(
-          _taskDescriptionController.text,
-          _taskExpectedOutputController.text,
-          _outputFiles,
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('${widget.agent.role}',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              SizedBox(height: 10),
-              if (widget.selectedPart == '머리') ...[
-                TextFormField(
-                  controller: _roleController,
-                  decoration: InputDecoration(labelText: '역할'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '역할은 필수입니다';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _goalController,
-                  decoration: InputDecoration(labelText: '목표'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '목표는 필수입니다';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _backstoryController,
-                  decoration: InputDecoration(labelText: '배경 이야기'),
-                  maxLines: 3,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '배경 이야기는 필수입니다';
-                    }
-                    return null;
-                  },
-                ),
-              ] else if (widget.selectedPart == '태스크') ...[
-                Text('태스크 이름: ${widget.agent.task?.displayName ?? ''}',
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                SizedBox(height: 10),
-                TextFormField(
-                  controller: _taskDescriptionController,
-                  decoration: InputDecoration(labelText: '태스크 설명'),
-                  maxLines: 3,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '태스크 설명은 필수입니다';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _taskExpectedOutputController,
-                  decoration: InputDecoration(
-                    labelText: '예상 결과',
-                    errorText: _taskExpectedOutputController.text.isEmpty
-                        ? '예상 결과는 필수입니다'
-                        : null,
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '예상 결과는 필수입니다';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 20),
-                Text('출력 파일', style: Theme.of(context).textTheme.titleMedium),
-                ..._outputFiles.asMap().entries.map((entry) {
-                  int index = entry.key;
-                  String file = entry.value;
-                  return Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          decoration: InputDecoration(labelText: '파일 이름'),
-                          initialValue: file,
-                          onChanged: (value) => _updateOutputFile(index, value),
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.remove),
-                        onPressed: () => _removeOutputFile(index),
-                      ),
-                    ],
-                  );
-                }).toList(),
-                ElevatedButton(
-                  onPressed: _addOutputFile,
-                  child: Text('출력 파일 추가'),
-                ),
-              ],
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _saveForm,
-                child: Text('저장'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _updateOutputFile(int index, String value) {
-    setState(() {
-      _outputFiles[index] = value;
-    });
-  }
-
-  void _removeOutputFile(int index) {
-    setState(() {
-      _outputFiles.removeAt(index);
-    });
-  }
-
-  void _addOutputFile() {
-    setState(() {
-      _outputFiles.add('');
-    });
+    Navigator.pop(context);
   }
 }

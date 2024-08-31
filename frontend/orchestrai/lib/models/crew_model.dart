@@ -42,11 +42,38 @@ class CrewModel extends ChangeNotifier {
     'Lead Market Analyst': {
       'role': 'Lead Market Analyst',
       'goal':
-          'Conduct amazing analysis of the products and competitors, providing in-depth insights to guide marketing strategies.',
+          'Conduct comprehensive analysis of the market and competitors, providing in-depth insights to guide marketing strategies.',
       'backstory':
-          'As the Lead Market Analyst at a premier digital marketing firm, you specialize in dissecting online business landscapes.',
+          'As the Lead Market Analyst at a premier digital marketing firm, you specialize in dissecting online business landscapes and identifying key trends and opportunities.',
     },
-    // ... 다른 에이전트들의 상세 정보
+    'Chief Marketing Strategist': {
+      'role': 'Chief Marketing Strategist',
+      'goal':
+          'Develop innovative and effective marketing strategies based on market analysis and business objectives.',
+      'backstory':
+          'With years of experience in various marketing roles, you have risen to become the Chief Marketing Strategist, known for your ability to craft compelling campaigns that drive results.',
+    },
+    'Creative Content Creator': {
+      'role': 'Creative Content Creator',
+      'goal':
+          'Produce engaging and original content across various platforms that resonates with the target audience and supports marketing objectives.',
+      'backstory':
+          'Your passion for storytelling and your knack for understanding audience preferences have made you a standout Creative Content Creator in the digital marketing world.',
+    },
+    'Senior Photographer': {
+      'role': 'Senior Photographer',
+      'goal':
+          'Capture high-quality, visually striking images that enhance marketing materials and effectively communicate brand messages.',
+      'backstory':
+          'With a keen eye for composition and lighting, you have built a reputation as a Senior Photographer who can bring any product or concept to life through your lens.',
+    },
+    'Chief Creative Director': {
+      'role': 'Chief Creative Director',
+      'goal':
+          'Oversee and guide the creative direction of all marketing campaigns, ensuring cohesive and impactful brand messaging across all channels.',
+      'backstory':
+          'Your innovative vision and ability to inspire teams have led you to the role of Chief Creative Director, where you shape the visual and conceptual identity of major brands.',
+    },
   };
 
   static const List<String> predefinedTaskNames = [
@@ -63,7 +90,23 @@ class CrewModel extends ChangeNotifier {
           'Analyze the current market trends and competitor strategies.',
       'expectedOutput': 'Comprehensive market analysis report',
     },
-    // ... 다른 태스크들의 상세 정보
+    'Strategy Development': {
+      'description': 'Develop marketing strategies based on market analysis.',
+      'expectedOutput': 'Detailed marketing strategy document',
+    },
+    'Content Creation': {
+      'description': 'Create engaging content for various marketing channels.',
+      'expectedOutput': 'Content pieces for different platforms',
+    },
+    'Photo Shooting': {
+      'description': 'Capture high-quality photos for marketing materials.',
+      'expectedOutput': 'Set of professional photographs',
+    },
+    'Creative Direction': {
+      'description':
+          'Provide overall creative direction for the marketing campaign.',
+      'expectedOutput': 'Creative brief and guidelines',
+    },
   };
 
   Future<void> loadAvailableTools() async {
@@ -130,14 +173,14 @@ class CrewModel extends ChangeNotifier {
                     })
                 .toList(),
           },
-          'tasks': {
+          'tasks': [
             for (var agent in agents.where((a) => a != null && a.task != null))
-              agent!.task!.description: {
-                'description': agent.task!.description,
+              {
+                'description': agent!.task!.description,
                 'target_agent': agent.role,
                 'expected_output': agent.task!.expectedOutput,
               }
-          },
+          ],
         }
       };
 
