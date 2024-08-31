@@ -5,7 +5,7 @@ import '../models/crew_model.dart';
 class ComponentSelectionView extends StatelessWidget {
   final String part;
   final int optionCount;
-  final List<String> selectedTools;
+  final List<Map<String, String>> selectedTools;
   final String selectedHead;
   final String selectedTask;
   final Function(String) onAssetChanged;

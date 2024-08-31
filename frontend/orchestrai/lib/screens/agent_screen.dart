@@ -63,10 +63,13 @@ class _AgentScreenState extends State<AgentScreen> {
 
   void _toggleTool(String toolName) {
     setState(() {
-      if (agent.tools.contains(toolName)) {
-        agent.tools.remove(toolName);
-      } else if (agent.tools.length < 4) {
-        agent.tools.add(toolName);
+      if (agent.tools.any((tool) => tool['name'] == toolName)) {
+        agent.tools.removeWhere((tool) => tool['name'] == toolName);
+      } else {
+        if (agent.tools.length < 4) {
+          // 최대 4개의 도구만 선택 가능하도록 제한
+          agent.tools.add({'name': toolName});
+        }
       }
     });
     Provider.of<CrewModel>(context, listen: false)

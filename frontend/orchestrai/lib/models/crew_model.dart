@@ -161,18 +161,18 @@ class CrewModel extends ChangeNotifier {
     try {
       final crewData = {
         'crew_resources': {
-          'agents': {
-            'agent_list': agents
-                .where((agent) => agent != null)
-                .map((agent) => {
-                      'role': agent!.role,
-                      'goal': agent.goal,
-                      'backstory': agent.backstory,
-                      'tools': agent.tools,
-                      'task_description': agent.task?.description,
-                    })
-                .toList(),
-          },
+          'agents': agents
+              .where((agent) => agent != null)
+              .map((agent) => {
+                    'role': agent!.role,
+                    'goal': agent.goal,
+                    'backstory': agent.backstory,
+                    'tools': agent.tools
+                        .map((tool) => {'name': tool['name']})
+                        .toList(),
+                    'task_description': agent.task?.description,
+                  })
+              .toList(),
           'tasks': [
             for (var agent in agents.where((a) => a != null && a.task != null))
               {
@@ -201,7 +201,8 @@ class AgentModel {
   String goal;
   String backstory;
   Task? task; // Task를 선택적으로 만듭니다
-  List<String> tools;
+  // List<String> tools;
+  List<Map<String, String>> tools;
   String headAsset;
   String bodyAsset;
   String toolAsset;
